@@ -83,7 +83,7 @@ main(int argc, char* argv[])
 
   consumerHelper.Install(nodes.Get(0));
   consumerHelper.Install(nodes.Get(1));
-  consumerHelper.Install(nodes.Get(2));
+  consumerHelper.Install(nodes.Get(4));
 
   // Connect Tracers
   Config::ConnectWithoutContext("/NodeList/*/ApplicationList/*/FileDownloadFinished",
@@ -99,12 +99,12 @@ main(int argc, char* argv[])
   // Producer will reply to all requests starting with /prefix
   producerHelper.SetPrefix("/myprefix");
   producerHelper.SetAttribute("ContentDirectory", StringValue("/home/someuser/somedata/"));
-  producerHelper.Install(nodes.Get(4)); // install to some node from nodelist
+  producerHelper.Install(nodes.Get(3)); // install to some node from nodelist
 
   ndn::GlobalRoutingHelper ndnGlobalRoutingHelper;
   ndnGlobalRoutingHelper.InstallAll();
 
-  ndnGlobalRoutingHelper.AddOrigins("/myprefix", nodes.Get(4));
+  ndnGlobalRoutingHelper.AddOrigins("/myprefix", nodes.Get(3));
   ndn::GlobalRoutingHelper::CalculateRoutes();
 
   ndn::AppDelayTracer::InstallAll("app-delays-trace.txt");
