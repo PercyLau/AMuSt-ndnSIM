@@ -243,7 +243,7 @@ FakeMultimediaServer::StartApplication()
 uint16_t
 FakeMultimediaServer::GetFaceMTU(uint32_t faceId)
 {
-  Ptr<ns3::PointToPointNetDevice> nd1 = GetNode ()->GetDevice(faceId)->GetObject<ns3::PointToPointNetDevice>();
+  Ptr<ns3::NetDevice> nd1 = GetNode ()->GetDevice(faceId)->GetObject<ns3::NetDevice>();
   return nd1->GetMtu();
 
 }

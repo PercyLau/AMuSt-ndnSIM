@@ -4,13 +4,13 @@
 #include "ns3/wifi-module.h"
 #include "ns3/mobility-module.h"
 #include "ns3/internet-module.h"
-#include "ns3/ndnSIM/apps/ndn-app.hpp"
+#include "ns3/olsr-helper.h" //Optimized Link State Routing
 #include "ns3/ndnSIM-module.h"
 
 using namespace std;
 namespace ns3 {
 
-NS_LOG_COMPONENT_DEFINE("ndn.WiFiExample");
+NS_LOG_COMPONENT_DEFINE("IP.AVC.WiFiExample");
 
 void
 FileDownloadedTrace(Ptr<ns3::ndn::App> app, shared_ptr<const ndn::Name> interestName, double downloadSpeed, long milliSeconds)
@@ -47,9 +47,10 @@ main(int argc, char* argv[])
   //////////////////////
   //////////////////////
   WifiHelper wifi = WifiHelper::Default();
-  wifi.SetRemoteStationManager ("ns3::AarfWifiManager");
+  // wifi.SetRemoteStationManager ("ns3::AarfWifiManager");
   wifi.SetStandard(WIFI_PHY_STANDARD_80211a);
-  //wifi.SetRemoteStationManager("ns3::ConstantRateWifiManager", "DataMode", StringValue("OfdmRate24Mbps"));
+  wifi.SetRemoteStationManager("ns3::ConstantRateWifiManager", "DataMode",
+                               StringValue("OfdmRate24Mbps"));
 
   YansWifiChannelHelper wifiChannel; // = YansWifiChannelHelper::Default ();
   wifiChannel.SetPropagationDelay("ns3::ConstantSpeedPropagationDelayModel");
@@ -94,78 +95,50 @@ main(int argc, char* argv[])
   // 2. Install Mobility model
   mobility.Install(nodes);
 
-  // 3. Install NDN stack
+  // 3. Install IP stack
   NS_LOG_INFO("Installing NDN stack");
-  ndn::StackHelper ndnHelper;
+  InternetStackHelper ipstackHelper;
   // ndnHelper.AddNetDeviceFaceCreateCallback (WifiNetDevice::GetTypeId (), MakeCallback
   // (MyNetDeviceFaceCallback));
-  ndnHelper.SetOldContentStore("ns3::ndn::cs::Lru", "MaxSize", "100");
-  ndnHelper.setCsSize(100);
-  ndnHelper.SetDefaultRoutes(true);
-  ndnHelper.Install(nodes);
+  ipstackHelper.InstallAll();
+  Ipv4AddressHelper address;
+  address.SetBase("10.1.2.0","255.255.255.0");
+  Ipv4InterfaceContainer interfaces = address.Assign(nodes);
 
-  // Set BestRoute strategy
+  // Set routing strategy
   ndn::StrategyChoiceHelper::Install(nodes, "/", "ndn:/localhost/nfd/strategy/client-control");
 
-  // 4. Set up applications
+  // 4. Set up client devices
   NS_LOG_INFO("Installing Applications");
 
-  //ndn::AppHelper consumerHelper("ns3::ndn::ConsumerCbr");
-  ndn::AppHelper consumerHelper("ns3::ndn::FileConsumerCbr");
-
-  //DASH parameters
-  consumerHelper.SetAttribute("FileToRequest", StringValue("/myprefix/file1.img"));
-
+  //set up mobile video consumer
+  ns3::ndn::AppHelper consumerHelper("ns3::ndn::FileConsumerCbr::MultimediaConsumer");
+  consumerHelper.SetAttribute("AllowUpscale", BooleanValue(true));
+  consumerHelper.SetAttribute("AllowDownscale", BooleanValue(false));
+  consumerHelper.SetAttribute("ScreenWidth", UintegerValue(1920));
+  consumerHelper.SetAttribute("ScreenHeight", UintegerValue(1080));
+  consumerHelper.SetAttribute("StartRepresentationId", StringValue("auto"));
+  consumerHelper.SetAttribute("MaxBufferedSeconds", UintegerValue(30));
+  consumerHelper.SetAttribute("StartUpDelay", StringValue("0.1"));
+  consumerHelper.SetAttribute("AdaptationLogic", StringValue("dash::player::RateAndBufferBasedAdaptationLogic"));
+  consumerHelper.SetAttribute("MpdFileToRequest", StringValue(std::string("/home/lockheed/multimediaData/AVC/BBB-2s.mpd" )));
 
   consumerHelper.Install(nodes.Get(0));
-  //consumerHelper.SetAttribute("Frequency", DoubleValue(24.0));
-  //consumerHelper.SetPrefix("/node1/prefix");
   consumerHelper.Install(nodes.Get(1));
-  //consumerHelper.SetAttribute("Frequency", DoubleValue(10.0));
-  //consumerHelper.SetPrefix("/node2/prefix");
   consumerHelper.Install(nodes.Get(2));
-  //consumerHelper.SetAttribute("Frequency", DoubleValue(60.0));
-  //consumerHelper.SetPrefix("/node3/prefix");
   consumerHelper.Install(nodes.Get(3));
-  //consumerHelper.SetAttribute("Frequency", DoubleValue(40.0));
-  //consumerHelper.SetPrefix("/node4/prefix");
-  //consumerHelper.SetAttribute("Frequency", DoubleValue(50.0));
   consumerHelper.Install(nodes.Get(4));
 
-  //ndn::AppHelper producerHelper("ns3::ndn::Producer");
-  // Connect Tracers
-  Config::ConnectWithoutContext("/NodeList/*/ApplicationList/*/FileDownloadFinished",
-                               MakeCallback(&FileDownloadedTrace));
-  Config::ConnectWithoutContext("/NodeList/*/ApplicationList/*/ManifestReceived",
-                               MakeCallback(&FileDownloadedManifestTrace));
-  Config::ConnectWithoutContext("/NodeList/*/ApplicationList/*/FileDownloadStarted",
-                               MakeCallback(&FileDownloadStartedTrace));
+  // 5. Set up server devices
+  ndn::AppHelper mpdProducerHelper("ns3::ndn::FileServer");
+  mpdProducerHelper.SetPrefix("/home/lockheed/multimediaData/AVC/");
+  mpdProducerHelper.SetAttribute("ContentDirectory", StringValue("/home/lockheed/multimediaData/AVC/"));
+  mpdProducerHelper.Install(nodes.Get(8));
 
-  //
-
-  //DASH parameters
-  ndn::AppHelper producerHelper("ns3::ndn::FileServer");
-  producerHelper.SetPrefix("/myprefix");
-  producerHelper.SetAttribute("ContentDirectory", StringValue("/home/someuser/somedata"));
-  producerHelper.Install(nodes.Get(8));
-  //producerHelper.Install(nodes.Get(2));
-  //producerHelper.Install(nodes.Get(3));
-  //producerHelper.Install(nodes.Get(4));
-  //producerHelper.Install(nodes.Get(5));
-  //producerHelper.Install(nodes.Get(6));
-  producerHelper.Install(nodes.Get(7));
-  //producerHelper.Install(nodes.Get(8));
+  // 6. Set global routing?
   ndn::GlobalRoutingHelper ndnGlobalRoutingHelper;
   ndnGlobalRoutingHelper.InstallAll();
-
-  //ndnGlobalRoutingHelper.AddOrigins("/myprefix",nodes.Get(1));
   ndnGlobalRoutingHelper.AddOrigins("/myprefix",nodes.Get(8));
-  //ndnGlobalRoutingHelper.AddOrigins("/myprefix",nodes.Get(3));
-  //ndnGlobalRoutingHelper.AddOrigins("/myprefix",nodes.Get(4));
-  //ndnGlobalRoutingHelper.AddOrigins("/myprefix",nodes.Get(5));
-  //ndnGlobalRoutingHelper.AddOrigins("/myprefix",nodes.Get(6));
-  //ndnGlobalRoutingHelper.AddOrigins("/myprefix",nodes.Get(7));
-  //ndnGlobalRoutingHelper.AddOrigins("/myprefix",nodes.Get(8));
   ndn::GlobalRoutingHelper::CalculateRoutes();
 
   //producerHelper.Install(nodes.Get(6));
@@ -177,10 +150,10 @@ main(int argc, char* argv[])
   //producerHelper.Install(nodes.Get(8));
   ////////////////
 
-  Simulator::Stop(Seconds(80.0));
-
-  ndn::AppDelayTracer::InstallAll("app-delays-trace.txt");
-  ndn::FileConsumerLogTracer::InstallAll("file-consumer-log-trace.txt");
+  Simulator::Stop(Seconds(200));
+  ndn::DASHPlayerTracer::InstallAll("dash-output.txt");
+  //ndn::AppDelayTracer::InstallAll("app-delays-trace.txt");
+  //ndn::FileConsumerLogTracer::InstallAll("file-consumer-log-trace.txt");
 
   Simulator::Run();
   Simulator::Destroy();

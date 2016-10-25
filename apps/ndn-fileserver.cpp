@@ -29,7 +29,7 @@
 #include "ns3/ndnSIM/model/ndn-common.hpp"
 
 #include "ns3/point-to-point-module.h"
-
+#include "ns3/wifi-module.h"
 
 #include "model/ndn-app-face.hpp"
 #include "model/ndn-ns3.hpp"
@@ -113,9 +113,9 @@ FileServer::StopApplication()
 uint16_t
 FileServer::GetFaceMTU(uint32_t faceId)
 {
-  Ptr<ns3::PointToPointNetDevice> nd1 = GetNode ()->GetDevice(faceId)->GetObject<ns3::PointToPointNetDevice>();
+  //todo: a compatible mtu get function. here we cannot use point-to-point netdevice anymore
+  Ptr<ns3::NetDevice> nd1 = GetNode()->GetDevice(faceId)->GetObject<ns3::NetDevice>();
   return nd1->GetMtu();
-
 }
 
 

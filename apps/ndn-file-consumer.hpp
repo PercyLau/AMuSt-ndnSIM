@@ -57,7 +57,6 @@ namespace ndn {
 
 /**
  * @ingroup ndn-apps
- * @brief Ndn application for sending out Interest packets at a "constant" rate (Poisson process)
  */
 class FileConsumer : public App {
 public:
