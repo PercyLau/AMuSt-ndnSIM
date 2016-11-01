@@ -167,7 +167,8 @@ private:
   nfd::ConfigSection m_config;
 
   Ptr<ContentStore> m_csFromNdnSim;
-};
+  Ptr<ContentStore> m_opFromNdnSim;
+ };
 
 L3Protocol::L3Protocol()
   : m_impl(new Impl())
@@ -353,6 +354,10 @@ L3Protocol::NotifyNewAggregate()
       m_impl->m_csFromNdnSim = GetObject<ContentStore>();
       if (m_impl->m_csFromNdnSim != nullptr) {
         m_impl->m_forwarder->setCsFromNdnSim(m_impl->m_csFromNdnSim);
+      }
+      m_impl->m_opFromNdnSim = GetObject<ContentStore>();
+      if (m_impl->m_opFromNdnSim != nullptr) {
+      m_impl->m_forwarder->setOpFromNdnSim(m_impl->m_opFromNdnSim);
       }
     }
   }

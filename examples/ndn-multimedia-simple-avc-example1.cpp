@@ -26,12 +26,31 @@
 
 namespace ns3 {
 
+void
+FileDownloadedTrace(Ptr<ns3::ndn::App> app, shared_ptr<const ndn::Name> interestName, double downloadSpeed, long milliSeconds)
+{
+  std::cout << "Trace: File finished downloading: " << Simulator::Now().GetMilliSeconds () << " "<< *interestName <<
+     " Download Speed: " << downloadSpeed/1000.0 << " Kilobit/s in " << milliSeconds << " ms" << std::endl;
+}
+
+void
+FileDownloadedManifestTrace(Ptr<ns3::ndn::App> app, shared_ptr<const ndn::Name> interestName, long fileSize)
+{
+  std::cout << "Trace: Manifest received: " << Simulator::Now().GetMilliSeconds () <<" "<< *interestName << " File Size: " << fileSize << std::endl;
+}
+
+void
+FileDownloadStartedTrace(Ptr<ns3::ndn::App> app, shared_ptr<const ndn::Name> interestName)
+{
+  std::cout << "Trace: File started downloading: " << Simulator::Now().GetMilliSeconds () <<" "<< *interestName << std::endl;
+}
+
 int
 main(int argc, char* argv[])
 {
   // setting default parameters for PointToPoint links and channels
-  Config::SetDefault("ns3::PointToPointNetDevice::DataRate", StringValue("10Mbps"));
-  Config::SetDefault("ns3::PointToPointChannel::Delay", StringValue("10ms"));
+  Config::SetDefault("ns3::PointToPointNetDevice::DataRate", StringValue("1Mbps"));
+  Config::SetDefault("ns3::PointToPointChannel::Delay", StringValue("100ms"));
   Config::SetDefault("ns3::DropTailQueue::MaxPackets", StringValue("20"));
 
   // Read optional command-line parameters (e.g., enable visualizer with ./waf --run=<> --visualize
@@ -50,44 +69,55 @@ main(int argc, char* argv[])
   // Install NDN stack on all nodes
   ndn::StackHelper ndnHelper;
   ndnHelper.SetDefaultRoutes(true);
-  ndnHelper.setCsSize(0);
+  ndnHelper.setCsSize(1000);
+  ndnHelper.setOpMIPS(10000);
   ndnHelper.SetOldContentStore("ns3::ndn::cs::Lru", "MaxSize", "100");
   ndnHelper.InstallAll();
 
   // Choosing forwarding strategy
-  ndn::StrategyChoiceHelper::InstallAll("/myprefix", "/localhost/nfd/strategy/best-route");
+  ndn::StrategyChoiceHelper::InstallAll("/myprefix", "/localhost/nfd/strategy/best-routew");
 
   ns3::ndn::AppHelper consumerHelper("ns3::ndn::FileConsumerCbr::MultimediaConsumer");
   consumerHelper.SetAttribute("AllowUpscale", BooleanValue(true));
-  consumerHelper.SetAttribute("AllowDownscale", BooleanValue(false));
+  consumerHelper.SetAttribute("AllowDownscale", BooleanValue(true));
   consumerHelper.SetAttribute("ScreenWidth", UintegerValue(1920));
   consumerHelper.SetAttribute("ScreenHeight", UintegerValue(1080));
   consumerHelper.SetAttribute("StartRepresentationId", StringValue("auto"));
   consumerHelper.SetAttribute("MaxBufferedSeconds", UintegerValue(30));
-  consumerHelper.SetAttribute("StartUpDelay", StringValue("0.1"));
+  consumerHelper.SetAttribute("StartUpDelay", StringValue("1"));
 
   consumerHelper.SetAttribute("AdaptationLogic", StringValue("dash::player::RateAndBufferBasedAdaptationLogic"));
-  consumerHelper.SetAttribute("MpdFileToRequest", StringValue(std::string("/myprefix/AVC/BBB-2s.mpd" )));
+  consumerHelper.SetAttribute("MpdFileToRequest", StringValue(std::string("/home/percy/multimediaData/AVC/BBB-2s.mpd" )));
 
   //consumerHelper.SetPrefix (std::string("/Server_" + boost::lexical_cast<std::string>(i%server.size ()) + "/layer0"));
   ApplicationContainer app1 = consumerHelper.Install (nodes.Get(2));
+
+    // Connect Tracers
+  Config::ConnectWithoutContext("/NodeList/*/ApplicationList/*/FileDownloadFinished",
+                               MakeCallback(&FileDownloadedTrace));
+  Config::ConnectWithoutContext("/NodeList/*/ApplicationList/*/ManifestReceived",
+                               MakeCallback(&FileDownloadedManifestTrace));
+  Config::ConnectWithoutContext("/NodeList/*/ApplicationList/*/FileDownloadStarted",
+                               MakeCallback(&FileDownloadStartedTrace));
 
   // Producer
   ndn::AppHelper producerHelper("ns3::ndn::FileServer");
 
   // Producer will reply to all requests starting with /myprefix
-  producerHelper.SetPrefix("/myprefix");
-  producerHelper.SetAttribute("ContentDirectory", StringValue("/home/someuser/multimediaData"));
+  producerHelper.SetPrefix("/home/percy/multimediaData/AVC");
+  producerHelper.SetAttribute("ContentDirectory", StringValue("/home/percy/multimediaData/AVC"));
   producerHelper.Install(nodes.Get(0)); // install to some node from nodelist
 
   ndn::GlobalRoutingHelper ndnGlobalRoutingHelper;
   ndnGlobalRoutingHelper.InstallAll();
 
-  ndnGlobalRoutingHelper.AddOrigins("/myprefix", nodes.Get(0));
+  ndnGlobalRoutingHelper.AddOrigins("/home/percy/multimediaData/", nodes.Get(0));
   ndn::GlobalRoutingHelper::CalculateRoutes();
 
   Simulator::Stop(Seconds(1200.0));
 
+  ndn::DASHPlayerTracer::InstallAll("dash-output-test.txt");
+  ndn::CsTracer::InstallAll("cs-trace.txt", Seconds(1));
   Simulator::Run();
   Simulator::Destroy();
 

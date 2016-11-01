@@ -10,6 +10,7 @@
 using namespace std;
 namespace ns3 {
 
+
 NS_LOG_COMPONENT_DEFINE("ndn.AVC.WiFiExample");
 
 void
@@ -66,8 +67,8 @@ main(int argc, char* argv[])
   wifiMacHelper.SetType("ns3::AdhocWifiMac");
 
   Ptr<UniformRandomVariable> randomizer = CreateObject<UniformRandomVariable>();
-  randomizer->SetAttribute("Min", DoubleValue(10)); // 
-  randomizer->SetAttribute("Max", DoubleValue(100));
+  randomizer->SetAttribute("Min", DoubleValue(1)); // 
+  randomizer->SetAttribute("Max", DoubleValue(10));
 
   MobilityHelper mobility;
   mobility.SetPositionAllocator("ns3::RandomBoxPositionAllocator", "X", PointerValue(randomizer),
@@ -99,23 +100,28 @@ main(int argc, char* argv[])
   ndn::StackHelper ndnHelper;
   // ndnHelper.AddNetDeviceFaceCreateCallback (WifiNetDevice::GetTypeId (), MakeCallback
   // (MyNetDeviceFaceCallback));
-  ndnHelper.SetOldContentStore("ns3::ndn::cs::Lru", "MaxSize", "100");
-  ndnHelper.setCsSize(1000);
+  //ndnHelper.SetOldContentStore("ns3::ndn::cs::Lru", "MaxSize", "1");
+  ndnHelper.setCsSize(100);
+  ndnHelper.setOpMIPS(1);
   ndnHelper.SetDefaultRoutes(true);
   ndnHelper.Install(nodes.Get(0));
   ndnHelper.Install(nodes.Get(1));
   ndnHelper.Install(nodes.Get(2));
+
+  //ndnHelper.SetOldContentStore("ns3::ndn::cs::Lru", "MaxSize", "1");
+  ndnHelper.setCsSize(100);
+  ndnHelper.setOpMIPS(10000000);
   ndnHelper.Install(nodes.Get(3));
   ndnHelper.Install(nodes.Get(4));
   ndnHelper.Install(nodes.Get(5));
   ndnHelper.Install(nodes.Get(6));
   ndnHelper.Install(nodes.Get(7));
-
-  ndnHelper.SetOldContentStore("ns3::ndn::cs::Lru", "MaxSize", "1");
+  
   ndnHelper.setCsSize(1);
+  ndnHelper.setOpMIPS(1);
   ndnHelper.Install(nodes.Get(8));
   // Set routing strategy
-  ndn::StrategyChoiceHelper::Install(nodes, "/", "ndn:/localhost/nfd/strategy/client-control");
+  ndn::StrategyChoiceHelper::Install(nodes, "/", "ndn:/localhost/nfd/strategy/best-routew");
 
   // 4. Set up client devices
   NS_LOG_INFO("Installing Applications");
@@ -129,25 +135,34 @@ main(int argc, char* argv[])
   consumerHelper.SetAttribute("StartRepresentationId", StringValue("auto"));
   consumerHelper.SetAttribute("MaxBufferedSeconds", UintegerValue(10));
   consumerHelper.SetAttribute("StartUpDelay", StringValue("0.1"));
+  
   consumerHelper.SetAttribute("AdaptationLogic", StringValue("dash::player::RateAndBufferBasedAdaptationLogic"));
-  consumerHelper.SetAttribute("MpdFileToRequest", StringValue(std::string("/home/lockheed/multimediaData/AVC/BBB-2s.mpd" )));
+  consumerHelper.SetAttribute("MpdFileToRequest", StringValue(std::string("/home/percy/multimediaData/AVC/BBB-2s.mpd" )));
 
   consumerHelper.Install(nodes.Get(0));
   consumerHelper.Install(nodes.Get(1));
   consumerHelper.Install(nodes.Get(2));
-  consumerHelper.Install(nodes.Get(3));
-  consumerHelper.Install(nodes.Get(4));
+  //consumerHelper.Install(nodes.Get(3));
+  //consumerHelper.Install(nodes.Get(4));
+
+      // Connect Tracers
+  Config::ConnectWithoutContext("/NodeList/*/ApplicationList/*/FileDownloadFinished",
+                               MakeCallback(&FileDownloadedTrace));
+  Config::ConnectWithoutContext("/NodeList/*/ApplicationList/*/ManifestReceived",
+                               MakeCallback(&FileDownloadedManifestTrace));
+  Config::ConnectWithoutContext("/NodeList/*/ApplicationList/*/FileDownloadStarted",
+                               MakeCallback(&FileDownloadStartedTrace));
 
   // 5. Set up server devices
   ndn::AppHelper mpdProducerHelper("ns3::ndn::FileServer");
-  mpdProducerHelper.SetPrefix("/home/lockheed/multimediaData/AVC/");
-  mpdProducerHelper.SetAttribute("ContentDirectory", StringValue("/home/lockheed/multimediaData/AVC/"));
+  mpdProducerHelper.SetPrefix("/home/percy/multimediaData/AVC/");
+  mpdProducerHelper.SetAttribute("ContentDirectory", StringValue("/home/percy/multimediaData/AVC/"));
   mpdProducerHelper.Install(nodes.Get(8));
 
   // 6. Set global routing?
   ndn::GlobalRoutingHelper ndnGlobalRoutingHelper;
   ndnGlobalRoutingHelper.InstallAll();
-  ndnGlobalRoutingHelper.AddOrigins("/home/lockheed/multimediaData/AVC/",nodes.Get(8));
+  ndnGlobalRoutingHelper.AddOrigins("/home/percy/multimediaData/",nodes.Get(8));
   ndn::GlobalRoutingHelper::CalculateRoutes();
 
   //producerHelper.Install(nodes.Get(6));
@@ -159,9 +174,11 @@ main(int argc, char* argv[])
   //producerHelper.Install(nodes.Get(8));
   ////////////////
 
-  Simulator::Stop(Seconds(200));
+  Simulator::Stop(Seconds(2000));
   ndn::DASHPlayerTracer::InstallAll("dash-output.txt");
-  //ndn::AppDelayTracer::InstallAll("app-delays-trace.txt");
+  ndn::L3RateTracer::InstallAll("rate-trace.txt", Seconds(0.5));
+  //L2RateTracer("L2-output.txt",Seconds(0.5));
+  ndn::AppDelayTracer::InstallAll("app-delays-trace.txt");
   //ndn::FileConsumerLogTracer::InstallAll("file-consumer-log-trace.txt");
 
   Simulator::Run();

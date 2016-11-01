@@ -75,6 +75,9 @@ public:
   void
   setCsSize(size_t maxSize);
 
+  void
+  setOpMIPS(size_t maxMIPS);
+
   /**
    * @brief Set ndnSIM 1.0 content store implementation and its attributes
    * @param contentStoreClass string, representing class of the content store
@@ -258,9 +261,11 @@ public:
 private:
   ObjectFactory m_ndnFactory;
   ObjectFactory m_contentStoreFactory;
+  ObjectFactory m_objectProcessor;
 
   bool m_needSetDefaultRoutes;
   size_t m_maxCsSize;
+  size_t m_maxMIPS;
 
   typedef std::list<std::pair<TypeId, NetDeviceFaceCreateCallback>> NetDeviceCallbackList;
   NetDeviceCallbackList m_netDeviceCallbacks;

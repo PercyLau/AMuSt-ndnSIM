@@ -98,7 +98,7 @@ main(int argc, char* argv[])
 
   // Producer will reply to all requests starting with /prefix
   producerHelper.SetPrefix("/myprefix");
-  producerHelper.SetAttribute("ContentDirectory", StringValue("/home/someuser/somedata/"));
+  producerHelper.SetAttribute("ContentDirectory", StringValue("/home/percy/somedata/"));
   producerHelper.Install(nodes.Get(3)); // install to some node from nodelist
 
   ndn::GlobalRoutingHelper ndnGlobalRoutingHelper;

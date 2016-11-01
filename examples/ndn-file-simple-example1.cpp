@@ -30,6 +30,26 @@
 
 namespace ns3 {
 
+
+void
+FileDownloadedTrace(Ptr<ns3::ndn::App> app, shared_ptr<const ndn::Name> interestName, double downloadSpeed, long milliSeconds)
+{
+  std::cout << "Trace: File finished downloading: " << Simulator::Now().GetMilliSeconds () << " "<< *interestName <<
+     " Download Speed: " << downloadSpeed/1000.0 << " Kilobit/s in " << milliSeconds << " ms" << std::endl;
+}
+
+void
+FileDownloadedManifestTrace(Ptr<ns3::ndn::App> app, shared_ptr<const ndn::Name> interestName, long fileSize)
+{
+  std::cout << "Trace: Manifest received: " << Simulator::Now().GetMilliSeconds () <<" "<< *interestName << " File Size: " << fileSize << std::endl;
+}
+
+void
+FileDownloadStartedTrace(Ptr<ns3::ndn::App> app, shared_ptr<const ndn::Name> interestName)
+{
+  std::cout << "Trace: File started downloading: " << Simulator::Now().GetMilliSeconds () <<" "<< *interestName << std::endl;
+}
+
 int
 main(int argc, char* argv[])
 {
@@ -61,16 +81,23 @@ main(int argc, char* argv[])
 
   // Consumer
   ndn::AppHelper consumerHelper("ns3::ndn::FileConsumer");
-  consumerHelper.SetAttribute("FileToRequest", StringValue("/myprefix/file1.img"));
+  consumerHelper.SetAttribute("FileToRequest", StringValue("/myprefix/bunny_2s1.m4s"));
 
   consumerHelper.Install(nodes.Get(0)); // install to some node from nodelist
+
+  Config::ConnectWithoutContext("/NodeList/*/ApplicationList/*/FileDownloadFinished",
+                               MakeCallback(&FileDownloadedTrace));
+  Config::ConnectWithoutContext("/NodeList/*/ApplicationList/*/ManifestReceived",
+                               MakeCallback(&FileDownloadedManifestTrace));
+  Config::ConnectWithoutContext("/NodeList/*/ApplicationList/*/FileDownloadStarted",
+                               MakeCallback(&FileDownloadStartedTrace));
 
   // Producer
   ndn::AppHelper producerHelper("ns3::ndn::FileServer");
 
   // Producer will reply to all requests starting with /prefix
   producerHelper.SetPrefix("/myprefix");
-  producerHelper.SetAttribute("ContentDirectory", StringValue("/home/someuser/somedata/"));
+  producerHelper.SetAttribute("ContentDirectory", StringValue("/home/percy/multimediaData/AVC/BBB/bunny_2s_8000kbit"));
   producerHelper.Install(nodes.Get(2)); // install to some node from nodelist
 
   ndn::GlobalRoutingHelper ndnGlobalRoutingHelper;

@@ -41,7 +41,8 @@ namespace ndn {
 
 StackHelper::StackHelper()
   : m_needSetDefaultRoutes(false)
-  , m_maxCsSize(100)
+  , m_maxCsSize(10)
+  ,m_maxMIPS(100000000)
   , m_isRibManagerDisabled(false)
   , m_isFaceManagerDisabled(false)
   , m_isStatusServerDisabled(false)
@@ -51,6 +52,7 @@ StackHelper::StackHelper()
 
   m_ndnFactory.SetTypeId("ns3::ndn::L3Protocol");
   m_contentStoreFactory.SetTypeId("ns3::ndn::cs::Lru");
+  m_objectProcessor.SetTypeId("ns3::ndn::cs::Fifo");
 
   m_netDeviceCallbacks.push_back(
     std::make_pair(PointToPointNetDevice::GetTypeId(),
@@ -125,6 +127,11 @@ StackHelper::setCsSize(size_t maxSize)
   m_maxCsSize = maxSize;
 }
 
+void StackHelper::setOpMIPS(size_t maxMIPS)
+{
+  m_maxMIPS = maxMIPS;
+}
+
 Ptr<FaceContainer>
 StackHelper::Install(const NodeContainer& c) const
 {
@@ -172,11 +179,18 @@ StackHelper::Install(Ptr<Node> node) const
 
   ndn->getConfig().put("tables.cs_max_packets", (m_maxCsSize == 0) ? 1 : m_maxCsSize);
 
+  //OON
+  ndn->getConfig().put("tables.cs_max_packets", (m_maxMIPS == 0) ? 1 : m_maxMIPS);
+
   // Create and aggregate content store if NFD's contest store has been disabled
   if (m_maxCsSize == 0) {
     ndn->AggregateObject(m_contentStoreFactory.Create<ContentStore>());
   }
 
+  if (m_maxMIPS == 0)
+{
+  ndn->AggregateObject(m_objectProcessor.Create<ContentStore>());
+}
   // Aggregate L3Protocol on node (must be after setting ndnSIM CS)
   node->AggregateObject(ndn);
 
