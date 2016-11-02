@@ -4,6 +4,10 @@
 		"selected_items":
 		[
 			[
+				"send",
+				"sendInterest"
+			],
+			[
 				"Contn",
 				"ContentStore"
 			],
@@ -92,55 +96,10 @@
 	"buffers":
 	[
 		{
-			"file": "examples/ndn-multimedia-simple-avc-example1.cpp",
+			"file": "examples/ndn-avc-wifi.cpp",
 			"settings":
 			{
-				"buffer_size": 5601,
-				"encoding": "UTF-8",
-				"line_ending": "Unix"
-			}
-		},
-		{
-			"file": "NFD/daemon/fw/best-route-strategy.cpp",
-			"settings":
-			{
-				"buffer_size": 3462,
-				"encoding": "UTF-8",
-				"line_ending": "Unix"
-			}
-		},
-		{
-			"file": "NFD/daemon/fw/strategy.hpp",
-			"settings":
-			{
-				"buffer_size": 6991,
-				"encoding": "UTF-8",
-				"line_ending": "Unix"
-			}
-		},
-		{
-			"contents": "Searching 162 files for \"m_csFromNdnSim\"\n\n/home/percy/ndnSIM/ns-3/src/ndnSIM/NFD/daemon/fw/forwarder.cpp:\n  100    bool isPending = inRecords.begin() != inRecords.end();\n  101    if (!isPending) {\n  102:     if (m_csFromNdnSim == nullptr) {\n  103        m_cs.find(interest,\n  104                  bind(&Forwarder::onContentStoreHit, this, ref(inFace), pitEntry, _1, _2),\n  ...\n  106      }\n  107      else {\n  108:       shared_ptr<Data> match = m_csFromNdnSim->Lookup(interest.shared_from_this());\n  109        if (match != nullptr) {\n  110          this->onContentStoreHit(inFace, pitEntry, interest, *match);\n  ...\n  335  \n  336    // CS insert\n  337:   if (m_csFromNdnSim == nullptr){\n  338      m_cs.insert(*dataCopyWithoutPacket);\n  339    }\n  340    else{\n  341:     m_csFromNdnSim->Add(dataCopyWithoutPacket);\n  342    }\n  343      // OP insert, specifically for DASH\n  ...\n  400    if (acceptToCache) {\n  401      // CS insert\n  402:     if (m_csFromNdnSim == nullptr){\n  403        m_cs.insert(data, true);\n  404      }\n  405      else{\n  406:       m_csFromNdnSim->Add(data.shared_from_this());\n  407      }\n  408      // OP insert, specificate for DASH\n\n/home/percy/ndnSIM/ns-3/src/ndnSIM/NFD/daemon/fw/forwarder.hpp:\n  235    DeadNonceList  m_deadNonceList;\n  236    shared_ptr<NullFace> m_csFace;\n  237:   ns3::Ptr<ns3::ndn::ContentStore> m_csFromNdnSim;\n  238  \n  239    static const Name LOCALHOST_NAME;\n  ...\n  328  Forwarder::setCsFromNdnSim(ns3::Ptr<ns3::ndn::ContentStore> cs)\n  329  {\n  330:   m_csFromNdnSim = cs;\n  331  }\n  332  \n\n/home/percy/ndnSIM/ns-3/src/ndnSIM/NFD/daemon/fw/strategy.hpp:\n  207  \n  208  inline const FaceTable&\n  209:       m_csFromNdnSim->Add(data.shared_from_this());\n  210  Strategy::getFaceTable()\n  211  {\n\n9 matches across 3 files\n\n\nSearching 162 files for \"      m_csFromNdnSim->Add(data.shared_from_this());\nsetCsFromNdnSim\"\n\n0 matches\n\nSearching 1468 files for \"      m_csFromNdnSim->Add(data.shared_from_this());\nsetCsFromNdnSim\"\n\n0 matches\n\nSearching 1468 files for \"      m_csFromNdnSim->Add(data.shared_from_this());\nm_csFromNdnSim\"\n\n0 matches\n\nSearching 1468 files for \"m_csFromNdnSim\"\n\n/home/percy/ndnSIM/ns-3/src/ndnSIM/NFD/daemon/fw/forwarder.cpp:\n  100    bool isPending = inRecords.begin() != inRecords.end();\n  101    if (!isPending) {\n  102:     if (m_csFromNdnSim == nullptr) {\n  103        m_cs.find(interest,\n  104                  bind(&Forwarder::onContentStoreHit, this, ref(inFace), pitEntry, _1, _2),\n  ...\n  106      }\n  107      else {\n  108:       shared_ptr<Data> match = m_csFromNdnSim->Lookup(interest.shared_from_this());\n  109        if (match != nullptr) {\n  110          this->onContentStoreHit(inFace, pitEntry, interest, *match);\n  ...\n  335  \n  336    // CS insert\n  337:   if (m_csFromNdnSim == nullptr){\n  338      m_cs.insert(*dataCopyWithoutPacket);\n  339    }\n  340    else{\n  341:     m_csFromNdnSim->Add(dataCopyWithoutPacket);\n  342    }\n  343      // OP insert, specifically for DASH\n  ...\n  400    if (acceptToCache) {\n  401      // CS insert\n  402:     if (m_csFromNdnSim == nullptr){\n  403        m_cs.insert(data, true);\n  404      }\n  405      else{\n  406:       m_csFromNdnSim->Add(data.shared_from_this());\n  407      }\n  408      // OP insert, specificate for DASH\n\n/home/percy/ndnSIM/ns-3/src/ndnSIM/NFD/daemon/fw/forwarder.hpp:\n  235    DeadNonceList  m_deadNonceList;\n  236    shared_ptr<NullFace> m_csFace;\n  237:   ns3::Ptr<ns3::ndn::ContentStore> m_csFromNdnSim;\n  238  \n  239    static const Name LOCALHOST_NAME;\n  ...\n  328  Forwarder::setCsFromNdnSim(ns3::Ptr<ns3::ndn::ContentStore> cs)\n  329  {\n  330:   m_csFromNdnSim = cs;\n  331  }\n  332  \n\n/home/percy/ndnSIM/ns-3/src/ndnSIM/NFD/daemon/fw/strategy.hpp:\n  207  \n  208  inline const FaceTable&\n  209:       m_csFromNdnSim->Add(data.shared_from_this());\n  210  Strategy::getFaceTable()\n  211  {\n\n/home/percy/ndnSIM/ns-3/src/ndnSIM/model/ndn-l3-protocol.cpp:\n  167    nfd::ConfigSection m_config;\n  168  \n  169:   Ptr<ContentStore> m_csFromNdnSim;\n  170  };\n  171  \n  ...\n  351  \n  352        NS_ASSERT(m_impl->m_forwarder != nullptr);\n  353:       m_impl->m_csFromNdnSim = GetObject<ContentStore>();\n  354:       if (m_impl->m_csFromNdnSim != nullptr) {\n  355:         m_impl->m_forwarder->setCsFromNdnSim(m_impl->m_csFromNdnSim);\n  356        }\n  357      }\n\n13 matches across 4 files\n\n\nSearching 1468 files for \"m_opFromNdnSim\"\n\n/home/percy/ndnSIM/ns-3/src/ndnSIM/NFD/daemon/fw/forwarder.cpp:\n  173  \n  174    //OON\n  175:   if (m_opFromNdnSim == nullptr){\n  176        return;\n  177    }else{\n  178:     shared_ptr<Data> match = this->m_opFromNdnSim->Lookup(interest.shared_from_this());\n  179      NFD_LOG_DEBUG(\"onObjectProcessor interest=\" << interest.getName());\n  180      if (match != nullptr){\n  ...\n  342    }\n  343      // OP insert, specifically for DASH\n  344:     if(m_opFromNdnSim == nullptr){\n  345          m_op.insert(*dataCopyWithoutPacket);\n  346      }else{\n  347:         m_opFromNdnSim->Add(dataCopyWithoutPacket);\n  348      }\n  349  \n  ...\n  407      }\n  408      // OP insert, specificate for DASH\n  409:     if (m_opFromNdnSim == nullptr){\n  410        m_op.insert(data,true);\n  411      }  \n  412      else{\n  413:       m_opFromNdnSim->Add(data.shared_from_this());\n  414      }\n  415    }\n\n/home/percy/ndnSIM/ns-3/src/ndnSIM/NFD/daemon/fw/forwarder.hpp:\n  239    shared_ptr<NullFace> m_csFace;\n  240    ns3::Ptr<ns3::ndn::ContentStore> m_csFromNdnSim;\n  241:   ns3::Ptr<ns3::ndn::ContentStore> m_opFromNdnSim;\n  242  \n  243    static const Name LOCALHOST_NAME;\n  ...\n  246     shared_ptr<NullFace> m_opFace; //OON\n  247    Cs             m_op; //OON\n  248:   ns3::Ptr<ns3::ndn::ContentStore> m_opFromNdnSim;//OON\n  249    // allow Strategy (base class) to enter pipelines\n  250    friend class fw::Strategy;\n  ...\n  338  Forwarder::setCsFromNdnSim(ns3::Ptr<ns3::ndn::ContentStore> op)\n  339  {\n  340:   m_opFromNdnSim = op;\n  341  }\n  342  \n\n/home/percy/ndnSIM/ns-3/src/ndnSIM/NFD/daemon/fw/strategy.hpp:\n  176                 const Interest& interest){\n  177    //to do revise interest\n  178:   if (m_forwarder.m_opFromNdnSim != nullptr){\n  179:     shared_ptr<Data> match = m_forwarder.m_opFromNdnSim->Lookup(interest.shared_from_this());\n  180     //shared_ptr<Data> match = nullptr;\n  181      if (match != nullptr){\n\n/home/percy/ndnSIM/ns-3/src/ndnSIM/model/ndn-l3-protocol.cpp:\n  168  \n  169    Ptr<ContentStore> m_csFromNdnSim;\n  170:   Ptr<ContentStore> m_opFromNdnSim;\n  171   };\n  172  \n  ...\n  356          m_impl->m_forwarder->setCsFromNdnSim(m_impl->m_csFromNdnSim);\n  357        }\n  358:       m_impl->m_opFromNdnSim = GetObject<ConnectStore>();\n  359:       if (m_impl->m_opFromNdnSim != nullptr) {\n  360:       m_impl->m_forwarder->setOpFromNdnSim(m_impl->m_opFromNdnSim);\n  361        }\n  362      }\n\n15 matches across 4 files\n\n\nSearching 1468 files for \"m_cs\"\n\n/home/percy/ndnSIM/ns-3/src/ndnSIM/NFD/daemon/fw/forwarder.cpp:\n   48    , m_measurements(m_nameTree)\n   49    , m_strategyChoice(m_nameTree, fw::makeDefaultStrategy(*this))\n   50:   , m_csFace(make_shared<NullFace>(FaceUri(\"contentstore://\")))\n   51    ,m_opFace(make_shared<NullFace>(FaceUri(\"objectprocessor://\")))\n   52  {\n   53    fw::installStrategies(*this);\n   54:   getFaceTable().addReserved(m_csFace, FACEID_CONTENT_STORE);\n   55    getFaceTable().addReserved(m_opFace,FACEID_OBJECT_PROCESSOR);\n   56  }\n   ..\n  100    bool isPending = inRecords.begin() != inRecords.end();\n  101    if (!isPending) {\n  102:     if (m_csFromNdnSim == nullptr) {\n  103:       m_cs.find(interest,\n  104                  bind(&Forwarder::onContentStoreHit, this, ref(inFace), pitEntry, _1, _2),\n  105                  bind(&Forwarder::onContentStoreMiss, this, ref(inFace), pitEntry, _1));\n  106      }\n  107      else {\n  108:       shared_ptr<Data> match = m_csFromNdnSim->Lookup(interest.shared_from_this());\n  109        if (match != nullptr) {\n  110          this->onContentStoreHit(inFace, pitEntry, interest, *match);\n  ...\n  151    NFD_LOG_DEBUG(\"onContentStoreHit interest=\" << interest.getName());\n  152  \n  153:   beforeSatisfyInterest(*pitEntry, *m_csFace, data);\n  154    this->dispatchToStrategy(pitEntry, bind(&Strategy::beforeSatisfyInterest, _1,\n  155:                                           pitEntry, cref(*m_csFace), cref(data)));\n  156  \n  157    const_pointer_cast<Data>(data.shared_from_this())->setIncomingFaceId(FACEID_CONTENT_STORE);\n  ...\n  335  \n  336    // CS insert\n  337:   if (m_csFromNdnSim == nullptr){\n  338:     m_cs.insert(*dataCopyWithoutPacket);\n  339    }\n  340    else{\n  341:     m_csFromNdnSim->Add(dataCopyWithoutPacket);\n  342    }\n  343      // OP insert, specifically for DASH\n  ...\n  400    if (acceptToCache) {\n  401      // CS insert\n  402:     if (m_csFromNdnSim == nullptr){\n  403:       m_cs.insert(data, true);\n  404      }\n  405      else{\n  406:       m_csFromNdnSim->Add(data.shared_from_this());\n  407      }\n  408      // OP insert, specificate for DASH\n\n/home/percy/ndnSIM/ns-3/src/ndnSIM/NFD/daemon/fw/forwarder.hpp:\n  232    Fib            m_fib;\n  233    Pit            m_pit;\n  234:   Cs             m_cs;\n  235    \n  236    Measurements   m_measurements;\n  237    StrategyChoice m_strategyChoice;\n  238    DeadNonceList  m_deadNonceList;\n  239:   shared_ptr<NullFace> m_csFace;\n  240:   ns3::Ptr<ns3::ndn::ContentStore> m_csFromNdnSim;\n  241  \n  242    static const Name LOCALHOST_NAME;\n  ...\n  307  Forwarder::getCs()\n  308  {\n  309:   return m_cs;\n  310  }\n  311  \n  ...\n  331  Forwarder::setCsFromNdnSim(ns3::Ptr<ns3::ndn::ContentStore> cs)\n  332  {\n  333:   m_csFromNdnSim = cs;\n  334  }\n  335  \n\n/home/percy/ndnSIM/ns-3/src/ndnSIM/NFD/daemon/mgmt/tables-config-section.cpp:\n   41                                           StrategyChoice& strategyChoice,\n   42                                           Measurements& measurements)\n   43:   : m_cs(cs)\n   44    // , m_pit(pit)\n   45    // , m_fib(fib)\n   ..\n   68  \n   69    NFD_LOG_INFO(\"Setting CS max packets to \" << DEFAULT_CS_MAX_PACKETS);\n   70:   m_cs.setLimit(DEFAULT_CS_MAX_PACKETS);\n   71  \n   72    m_areTablesConfigured = true;\n   ..\n  122        NFD_LOG_INFO(\"Setting CS max packets to \" << nCsMaxPackets);\n  123  \n  124:       m_cs.setLimit(nCsMaxPackets);\n  125        m_areTablesConfigured = true;\n  126      }\n\n/home/percy/ndnSIM/ns-3/src/ndnSIM/NFD/daemon/mgmt/tables-config-section.hpp:\n   64  \n   65  private:\n   66:   Cs& m_cs;\n   67    // Pit& m_pit;\n   68    // Fib& m_fib;\n\n/home/percy/ndnSIM/ns-3/src/ndnSIM/NFD/daemon/table/cs-policy.cpp:\n   51  Policy::afterInsert(iterator i)\n   52  {\n   53:   BOOST_ASSERT(m_cs != nullptr);\n   54    this->doAfterInsert(i);\n   55  }\n   ..\n   58  Policy::afterRefresh(iterator i)\n   59  {\n   60:   BOOST_ASSERT(m_cs != nullptr);\n   61    this->doAfterRefresh(i);\n   62  }\n   ..\n   65  Policy::beforeErase(iterator i)\n   66  {\n   67:   BOOST_ASSERT(m_cs != nullptr);\n   68    this->doBeforeErase(i);\n   69  }\n   ..\n   72  Policy::beforeUse(iterator i)\n   73  {\n   74:   BOOST_ASSERT(m_cs != nullptr);\n   75    this->doBeforeUse(i);\n   76  }\n\n/home/percy/ndnSIM/ns-3/src/ndnSIM/NFD/daemon/table/cs-policy.hpp:\n  159    std::string m_policyName;\n  160    size_t m_limit;\n  161:   Cs* m_cs;\n  162  };\n  163  \n  ...\n  171  Policy::getCs() const\n  172  {\n  173:   return m_cs;\n  174  }\n  175  \n  ...\n  177  Policy::setCs(Cs *cs)\n  178  {\n  179:   m_cs = cs;\n  180  }\n  181  \n\n/home/percy/ndnSIM/ns-3/src/ndnSIM/NFD/tests/daemon/mgmt/tables-config-section.t.cpp:\n   41  \n   42    TablesConfigSectionFixture()\n   43:     : m_cs(m_forwarder.getCs())\n   44      , m_pit(m_forwarder.getPit())\n   45      , m_fib(m_forwarder.getFib())\n   46      , m_strategyChoice(m_forwarder.getStrategyChoice())\n   47      , m_measurements(m_forwarder.getMeasurements())\n   48:     , m_tablesConfig(m_cs, m_pit, m_fib, m_strategyChoice, m_measurements)\n   49    {\n   50      m_tablesConfig.setConfigFile(m_config);\n   ..\n   73    Forwarder m_forwarder;\n   74  \n   75:   Cs& m_cs;\n   76    Pit& m_pit;\n   77    Fib& m_fib;\n   ..\n   87  BOOST_AUTO_TEST_CASE(ConfigureTablesWithDefaults)\n   88  {\n   89:   const size_t initialLimit = m_cs.getLimit();\n   90  \n   91    m_tablesConfig.ensureTablesAreConfigured();\n   92:   BOOST_CHECK_NE(initialLimit, m_cs.getLimit());\n   93  }\n   94  \n   ..\n  100      \"}\\n\";\n  101  \n  102:   const size_t nCsMaxPackets = m_cs.getLimit();\n  103  \n  104    BOOST_REQUIRE_NO_THROW(runConfig(CONFIG, true));\n  105:   BOOST_CHECK_EQUAL(m_cs.getLimit(), nCsMaxPackets);\n  106  \n  107    BOOST_REQUIRE_NO_THROW(runConfig(CONFIG, false));\n  108:   BOOST_CHECK_NE(m_cs.getLimit(), nCsMaxPackets);\n  109  \n  110:   const size_t defaultLimit = m_cs.getLimit();\n  111  \n  112    m_tablesConfig.ensureTablesAreConfigured();\n  113:   BOOST_CHECK_EQUAL(defaultLimit, m_cs.getLimit());\n  114  }\n  115  \n  ...\n  122      \"}\\n\";\n  123  \n  124:   BOOST_REQUIRE_NE(m_cs.getLimit(), 101);\n  125  \n  126    BOOST_REQUIRE_NO_THROW(runConfig(CONFIG, true));\n  127:   BOOST_CHECK_NE(m_cs.getLimit(), 101);\n  128  \n  129    BOOST_REQUIRE_NO_THROW(runConfig(CONFIG, false));\n  130:   BOOST_CHECK_EQUAL(m_cs.getLimit(), 101);\n  131  \n  132    m_tablesConfig.ensureTablesAreConfigured();\n  133:   BOOST_CHECK_EQUAL(m_cs.getLimit(), 101);\n  134  }\n  135  \n  ...\n  382    ConfigFile passiveConfig((IgnoreNotTablesSection()));\n  383  \n  384:   const size_t initialLimit = m_cs.getLimit();\n  385  \n  386    passiveConfig.parse(CONFIG, true, \"dummy-config\");\n  387:   BOOST_REQUIRE_EQUAL(initialLimit, m_cs.getLimit());\n  388  \n  389    passiveConfig.parse(CONFIG, false, \"dummy-config\");\n  390:   BOOST_REQUIRE_EQUAL(initialLimit, m_cs.getLimit());\n  391  \n  392    m_tablesConfig.ensureTablesAreConfigured();\n  393:   BOOST_CHECK_NE(initialLimit, m_cs.getLimit());\n  394  }\n  395  \n\n/home/percy/ndnSIM/ns-3/src/ndnSIM/NFD/tests/daemon/table/cs.t.cpp:\n   51      data->wireEncode();\n   52  \n   53:     m_cs.insert(*data);\n   54  \n   55      return data->getFullName();\n   ..\n   66    find(const std::function<void(uint32_t)>& check)\n   67    {\n   68:     m_cs.find(*m_interest,\n   69                [&] (const Interest& interest, const Data& data) {\n   70                    const Block& content = data.getContent();\n   ..\n   75  \n   76  protected:\n   77:   Cs m_cs;\n   78    shared_ptr<Interest> m_interest;\n   79  };\n   ..\n  249    startInterest(\"ndn:/A\")\n  250      .setChildSelector(0);\n  251:   m_cs.find(*m_interest,\n  252              [&leftmost] (const Interest& interest, const Data& data) {\n  253                leftmost = *reinterpret_cast<const uint32_t*>(data.getContent().value());},\n  ...\n  255    startInterest(\"ndn:/A\")\n  256      .setChildSelector(1);\n  257:   m_cs.find(*m_interest,\n  258              [&rightmost] (const Interest, const Data& data) {\n  259                rightmost = *reinterpret_cast<const uint32_t*>(data.getContent().value()); },\n\n/home/percy/ndnSIM/ns-3/src/ndnSIM/model/cs/ndn-content-store.cpp:\n   58  \n   59  Entry::Entry(Ptr<ContentStore> cs, shared_ptr<const Data> data)\n   60:   : m_cs(cs)\n   61    , m_data(data)\n   62  {\n   ..\n   78  Entry::GetContentStore()\n   79  {\n   80:   return m_cs;\n   81  }\n   82  \n\n/home/percy/ndnSIM/ns-3/src/ndnSIM/model/cs/ndn-content-store.hpp:\n   86  \n   87  private:\n   88:   Ptr<ContentStore> m_cs;        ///< \\brief content store to which entry is added\n   89    shared_ptr<const Data> m_data; ///< \\brief non-modifiable Data\n   90  };\n\n/home/percy/ndnSIM/ns-3/src/ndnSIM/model/ndn-l3-protocol.cpp:\n  167    nfd::ConfigSection m_config;\n  168  \n  169:   Ptr<ContentStore> m_csFromNdnSim;\n  170    Ptr<ContentStore> m_opFromNdnSim;\n  171   };\n  ...\n  352  \n  353        NS_ASSERT(m_impl->m_forwarder != nullptr);\n  354:       m_impl->m_csFromNdnSim = GetObject<ContentStore>();\n  355:       if (m_impl->m_csFromNdnSim != nullptr) {\n  356:         m_impl->m_forwarder->setCsFromNdnSim(m_impl->m_csFromNdnSim);\n  357        }\n  358        m_impl->m_opFromNdnSim = GetObject<ContentStore>();\n\n/home/percy/ndnSIM/ns-3/src/ndnSIM/tests/other/ndn-test.cpp:\n   47  public:\n   48    Tester()\n   49:     : m_csSize(100)\n   50      , m_interestRate(1000)\n   51      , m_shouldEvaluatePit(false)\n   ..\n   65  private:\n   66    std::string m_oldContentStore;\n   67:   size_t m_csSize;\n   68    double m_interestRate;\n   69    bool m_shouldEvaluatePit;\n   ..\n  167                           \"(e.g., ns3::ndn::cs::Lru, ns3::ndn::cs::Lfu, ...)\",\n  168                 m_oldContentStore);\n  169:   cmd.AddValue(\"cs-size\", \"Maximum number of cached packets per node\", m_csSize);\n  170    cmd.AddValue(\"rate\", \"Interest rate\", m_interestRate);\n  171    cmd.AddValue(\"pit\", \"Perform PIT evaluation if this parameter is true\",\n  ...\n  188    // Install NDN stack on all nodes\n  189    ndn::StackHelper ndnHelper;\n  190:   ndnHelper.setCsSize(m_csSize);\n  191  \n  192    if (!m_oldContentStore.empty()) {\n  193:     ndnHelper.SetOldContentStore(m_oldContentStore, \"MaxSize\", std::to_string(m_csSize));\n  194    }\n  195  \n\n64 matches across 12 files\n",
-			"settings":
-			{
-				"buffer_size": 17030,
-				"line_ending": "Unix",
-				"name": "Find Results",
-				"scratch": true
-			}
-		},
-		{
-			"file": "NFD/daemon/fw/forwarder.hpp",
-			"settings":
-			{
-				"buffer_size": 8648,
-				"line_ending": "Unix"
-			}
-		},
-		{
-			"file": "NFD/daemon/fw/forwarder.cpp",
-			"settings":
-			{
-				"buffer_size": 18591,
+				"buffer_size": 8108,
 				"encoding": "UTF-8",
 				"line_ending": "Unix"
 			}
@@ -215,34 +174,36 @@
 	"expanded_folders":
 	[
 		"/home/percy/ndnSIM/ns-3/src/ndnSIM",
+		"/home/percy/ndnSIM/ns-3/src/ndnSIM/.waf-tools",
 		"/home/percy/ndnSIM/ns-3/src/ndnSIM/NFD",
 		"/home/percy/ndnSIM/ns-3/src/ndnSIM/NFD/daemon",
-		"/home/percy/ndnSIM/ns-3/src/ndnSIM/NFD/daemon/fw",
-		"/home/percy/ndnSIM/ns-3/src/ndnSIM/apps",
 		"/home/percy/ndnSIM/ns-3/src/ndnSIM/examples"
 	],
 	"file_history":
 	[
+		"/home/percy/ndnSIM/ns-3/src/ndnSIM/NFD/daemon/fw/strategy.hpp",
+		"/home/percy/ndnSIM/ns-3/src/ndnSIM/NFD/daemon/fw/best-route-strategy.cpp",
+		"/home/percy/ndnSIM/ns-3/src/ndnSIM/examples/ndn-multimedia-simple-avc-example1.cpp",
+		"/home/percy/ndnSIM/ns-3/src/ndnSIM/NFD/daemon/fw/forwarder.hpp",
+		"/home/percy/ndnSIM/ns-3/src/ndnSIM/NFD/daemon/fw/forwarder.cpp",
+		"/home/percy/ndnSIM/ns-3/src/ndnSIM/examples/ndn-avc-wifi.cpp",
+		"/home/percy/multimediaData/AVC/BBB-2s.mpd",
+		"/home/percy/ndnSIM/ns-3/src/ndnSIM/apps/ndn-multimedia-consumer.hpp",
+		"/home/percy/ndnSIM/ns-3/src/ndnSIM/apps/ndn-multimedia-consumer.cpp",
+		"/home/percy/ndnSIM/ns-3/src/ndnSIM/examples/ndn-file-simple-example1.cpp",
 		"/home/percy/ndnSIM/ns-3/src/ndnSIM/apps/ndn-fileserver.cpp",
 		"/home/percy/ndnSIM/ns-3/src/ndnSIM/model/ndn-l3-protocol.cpp",
 		"/home/percy/ndnSIM/ns-3/src/ndnSIM/NFD/daemon/fw/strategy.cpp",
 		"/home/percy/ndnSIM/ns-3/src/ndnSIM/NFD/daemon/fw/best-route-strategy2.hpp",
-		"/home/percy/ndnSIM/ns-3/src/ndnSIM/NFD/daemon/fw/forwarder.hpp",
-		"/home/percy/ndnSIM/ns-3/src/ndnSIM/examples/ndn-avc-wifi.cpp",
 		"/home/percy/ndnSIM/ns-3/src/ndnSIM/apps/ndn-app.cpp",
 		"/home/percy/ndnSIM/ns-3/src/ndnSIM/apps/ndn-app.hpp",
 		"/home/percy/ndnSIM/ns-3/src/ndnSIM/NFD/daemon/fw/best-route-strategy.hpp",
 		"/home/percy/ndnSIM/ns-3/src/ndnSIM/examples/ndn-file-simple-example4-multi.cpp",
 		"/home/percy/ndnSIM/ns-3/src/ndnSIM/examples/ndn-file-simple-example2-tracers.cpp",
 		"/home/percy/ndnSIM/ns-3/src/ndnSIM/examples/ndn-file-simple-example3-enhanced.cpp",
-		"/home/percy/ndnSIM/ns-3/src/ndnSIM/NFD/daemon/fw/forwarder.cpp",
 		"/home/percy/ndnSIM/ns-3/src/ndnSIM/NFD/daemon/fw/strategy-registry.cpp",
-		"/home/percy/ndnSIM/ns-3/src/ndnSIM/NFD/daemon/fw/best-route-strategy.cpp",
-		"/home/percy/ndnSIM/ns-3/src/ndnSIM/examples/ndn-file-simple-example1.cpp",
-		"/home/percy/ndnSIM/ns-3/src/ndnSIM/NFD/daemon/fw/strategy.hpp",
 		"/home/percy/ndnSIM/ns-3/src/ndnSIM/utils/tracers/ndn-dashplayer-tracer.cpp",
 		"/home/percy/ndnSIM/ns-3/src/ndnSIM/utils/tracers/ndn-dashplayer-tracer.hpp",
-		"/home/percy/ndnSIM/ns-3/src/ndnSIM/examples/ndn-multimedia-simple-avc-example1.cpp",
 		"/home/percy/ndnSIM/ns-3/src/ndnSIM/examples/ndn-multimedia-avc-server.cpp",
 		"/home/percy/ndnSIM/ns-3/src/ndnSIM/model/cs/ndn-content-store.hpp",
 		"/home/percy/ndnSIM/ns-3/src/ndnSIM/helper/ndn-stack-helper.cpp",
@@ -253,7 +214,6 @@
 		"/home/percy/ndnSIM/ns-3/src/ndnSIM/NFD/daemon/face/face.hpp",
 		"/home/percy/ndnSIM/ns-3/src/ndnSIM/examples/ndn-simple.cpp",
 		"/home/percy/ndnSIM/ns-3/src/ndnSIM/examples/ndn-simple-wifi.cpp",
-		"/home/percy/multimediaData/AVC/BBB-2s.mpd",
 		"/home/percy/multimediaData/AVC/BBB/BigBuckBunnyNonSeg_2s_isoffmain_DIS_23009_1_v_2_1c2_2011_08_30.mpd",
 		"/home/percy/multimediaData/AVC/BBB/BigBuckBunny_2s_isoffmain_DIS_23009_1_v_2_1c2_2011_08_30.mpd",
 		"/home/lockheed/AMuStNDN/ns-3/src/ndnSIM/examples/ndn-file-simple-example4-multi.cpp",
@@ -431,24 +391,24 @@
 	"groups":
 	[
 		{
-			"selected": 3,
+			"selected": 0,
 			"sheets":
 			[
 				{
 					"buffer": 0,
-					"file": "examples/ndn-multimedia-simple-avc-example1.cpp",
+					"file": "examples/ndn-avc-wifi.cpp",
 					"semi_transient": false,
 					"settings":
 					{
-						"buffer_size": 5601,
+						"buffer_size": 8108,
 						"regions":
 						{
 						},
 						"selection":
 						[
 							[
-								3727,
-								3727
+								7811,
+								7811
 							]
 						],
 						"settings":
@@ -458,576 +418,10 @@
 							"translate_tabs_to_spaces": true
 						},
 						"translation.x": 0.0,
-						"translation.y": 1197.0,
-						"zoom_level": 1.0
-					},
-					"stack_index": 4,
-					"type": "text"
-				},
-				{
-					"buffer": 1,
-					"file": "NFD/daemon/fw/best-route-strategy.cpp",
-					"semi_transient": false,
-					"settings":
-					{
-						"buffer_size": 3462,
-						"regions":
-						{
-						},
-						"selection":
-						[
-							[
-								1484,
-								1484
-							]
-						],
-						"settings":
-						{
-							"syntax": "Packages/C++/C++.sublime-syntax",
-							"tab_size": 2,
-							"translate_tabs_to_spaces": true
-						},
-						"translation.x": 0.0,
-						"translation.y": 378.0,
-						"zoom_level": 1.0
-					},
-					"stack_index": 5,
-					"type": "text"
-				},
-				{
-					"buffer": 2,
-					"file": "NFD/daemon/fw/strategy.hpp",
-					"semi_transient": false,
-					"settings":
-					{
-						"buffer_size": 6991,
-						"regions":
-						{
-						},
-						"selection":
-						[
-							[
-								6848,
-								6848
-							]
-						],
-						"settings":
-						{
-							"syntax": "Packages/C++/C++.sublime-syntax",
-							"tab_size": 2,
-							"translate_tabs_to_spaces": true
-						},
-						"translation.x": 0.0,
-						"translation.y": 3991.0,
-						"zoom_level": 1.0
-					},
-					"stack_index": 1,
-					"type": "text"
-				},
-				{
-					"buffer": 3,
-					"semi_transient": false,
-					"settings":
-					{
-						"buffer_size": 17030,
-						"regions":
-						{
-							"match":
-							{
-								"flags": 112,
-								"regions":
-								[
-									[
-										212,
-										226
-									],
-									[
-										446,
-										460
-									],
-									[
-										661,
-										675
-									],
-									[
-										774,
-										788
-									],
-									[
-										951,
-										965
-									],
-									[
-										1060,
-										1074
-									],
-									[
-										1353,
-										1367
-									],
-									[
-										1515,
-										1529
-									],
-									[
-										1669,
-										1683
-									],
-									[
-										2316,
-										2330
-									],
-									[
-										2550,
-										2564
-									],
-									[
-										2765,
-										2779
-									],
-									[
-										2878,
-										2892
-									],
-									[
-										3055,
-										3069
-									],
-									[
-										3164,
-										3178
-									],
-									[
-										3457,
-										3471
-									],
-									[
-										3619,
-										3633
-									],
-									[
-										3773,
-										3787
-									],
-									[
-										3996,
-										4010
-									],
-									[
-										4121,
-										4135
-									],
-									[
-										4190,
-										4204
-									],
-									[
-										4279,
-										4293
-									],
-									[
-										4496,
-										4510
-									],
-									[
-										4603,
-										4617
-									],
-									[
-										4847,
-										4861
-									],
-									[
-										4960,
-										4974
-									],
-									[
-										5105,
-										5119
-									],
-									[
-										5215,
-										5229
-									],
-									[
-										5490,
-										5504
-									],
-									[
-										5688,
-										5702
-									],
-									[
-										5899,
-										5913
-									],
-									[
-										6108,
-										6122
-									],
-									[
-										6184,
-										6198
-									],
-									[
-										6458,
-										6472
-									],
-									[
-										6612,
-										6626
-									],
-									[
-										6681,
-										6695
-									],
-									[
-										6768,
-										6782
-									],
-									[
-										7060,
-										7064
-									],
-									[
-										7277,
-										7281
-									],
-									[
-										7502,
-										7506
-									],
-									[
-										7544,
-										7548
-									],
-									[
-										7825,
-										7829
-									],
-									[
-										8125,
-										8129
-									],
-									[
-										8294,
-										8298
-									],
-									[
-										8477,
-										8481
-									],
-									[
-										8516,
-										8520
-									],
-									[
-										8590,
-										8594
-									],
-									[
-										8767,
-										8771
-									],
-									[
-										8808,
-										8812
-									],
-									[
-										8876,
-										8880
-									],
-									[
-										9132,
-										9136
-									],
-									[
-										9301,
-										9305
-									],
-									[
-										9353,
-										9357
-									],
-									[
-										9477,
-										9481
-									],
-									[
-										9595,
-										9599
-									],
-									[
-										9879,
-										9883
-									],
-									[
-										10040,
-										10044
-									],
-									[
-										10227,
-										10231
-									],
-									[
-										10429,
-										10433
-									],
-									[
-										10621,
-										10625
-									],
-									[
-										10758,
-										10762
-									],
-									[
-										10895,
-										10899
-									],
-									[
-										11029,
-										11033
-									],
-									[
-										11228,
-										11232
-									],
-									[
-										11312,
-										11316
-									],
-									[
-										11388,
-										11392
-									],
-									[
-										11562,
-										11566
-									],
-									[
-										11820,
-										11824
-									],
-									[
-										11995,
-										11999
-									],
-									[
-										12152,
-										12156
-									],
-									[
-										12268,
-										12272
-									],
-									[
-										12373,
-										12377
-									],
-									[
-										12483,
-										12487
-									],
-									[
-										12607,
-										12611
-									],
-									[
-										12685,
-										12689
-									],
-									[
-										12804,
-										12808
-									],
-									[
-										12897,
-										12901
-									],
-									[
-										13010,
-										13014
-									],
-									[
-										13127,
-										13131
-									],
-									[
-										13238,
-										13242
-									],
-									[
-										13392,
-										13396
-									],
-									[
-										13520,
-										13524
-									],
-									[
-										13650,
-										13654
-									],
-									[
-										13767,
-										13771
-									],
-									[
-										13921,
-										13925
-									],
-									[
-										14074,
-										14078
-									],
-									[
-										14280,
-										14284
-									],
-									[
-										14419,
-										14423
-									],
-									[
-										14698,
-										14702
-									],
-									[
-										15047,
-										15051
-									],
-									[
-										15152,
-										15156
-									],
-									[
-										15294,
-										15298
-									],
-									[
-										15575,
-										15579
-									],
-									[
-										15736,
-										15740
-									],
-									[
-										15805,
-										15809
-									],
-									[
-										15894,
-										15898
-									],
-									[
-										16099,
-										16103
-									],
-									[
-										16265,
-										16269
-									],
-									[
-										16553,
-										16557
-									],
-									[
-										16824,
-										16828
-									],
-									[
-										16971,
-										16975
-									]
-								],
-								"scope": ""
-							}
-						},
-						"selection":
-						[
-							[
-								6842,
-								6842
-							]
-						],
-						"settings":
-						{
-							"detect_indentation": false,
-							"line_numbers": false,
-							"output_tag": 7,
-							"result_base_dir": "",
-							"result_file_regex": "^([^ \t].*):$",
-							"result_line_regex": "^ +([0-9]+):",
-							"scroll_past_end": true,
-							"syntax": "Packages/Default/Find Results.hidden-tmLanguage"
-						},
-						"translation.x": 0.0,
-						"translation.y": 756.0,
+						"translation.y": 3213.0,
 						"zoom_level": 1.0
 					},
 					"stack_index": 0,
-					"type": "text"
-				},
-				{
-					"buffer": 4,
-					"file": "NFD/daemon/fw/forwarder.hpp",
-					"semi_transient": true,
-					"settings":
-					{
-						"buffer_size": 8648,
-						"regions":
-						{
-						},
-						"selection":
-						[
-							[
-								0,
-								0
-							]
-						],
-						"settings":
-						{
-							"syntax": "Packages/C++/C++.sublime-syntax",
-							"tab_size": 2,
-							"translate_tabs_to_spaces": true
-						},
-						"translation.x": 0.0,
-						"translation.y": 4662.0,
-						"zoom_level": 1.0
-					},
-					"stack_index": 2,
-					"type": "text"
-				},
-				{
-					"buffer": 5,
-					"file": "NFD/daemon/fw/forwarder.cpp",
-					"semi_transient": false,
-					"settings":
-					{
-						"buffer_size": 18591,
-						"regions":
-						{
-						},
-						"selection":
-						[
-							[
-								12053,
-								12053
-							]
-						],
-						"settings":
-						{
-							"syntax": "Packages/C++/C++.sublime-syntax",
-							"tab_size": 2,
-							"translate_tabs_to_spaces": true
-						},
-						"translation.x": 0.0,
-						"translation.y": 4841.0,
-						"zoom_level": 1.0
-					},
-					"stack_index": 3,
 					"type": "text"
 				}
 			]

@@ -69,13 +69,13 @@ main(int argc, char* argv[])
   // Install NDN stack on all nodes
   ndn::StackHelper ndnHelper;
   ndnHelper.SetDefaultRoutes(true);
-  ndnHelper.setCsSize(1000);
+  ndnHelper.setCsSize(10);
   ndnHelper.setOpMIPS(10000);
   ndnHelper.SetOldContentStore("ns3::ndn::cs::Lru", "MaxSize", "100");
   ndnHelper.InstallAll();
 
   // Choosing forwarding strategy
-  ndn::StrategyChoiceHelper::InstallAll("/myprefix", "/localhost/nfd/strategy/best-routew");
+  ndn::StrategyChoiceHelper::InstallAll("/myprefix", "/localhost/nfd/strategy/best-route");
 
   ns3::ndn::AppHelper consumerHelper("ns3::ndn::FileConsumerCbr::MultimediaConsumer");
   consumerHelper.SetAttribute("AllowUpscale", BooleanValue(true));
@@ -116,8 +116,8 @@ main(int argc, char* argv[])
 
   Simulator::Stop(Seconds(1200.0));
 
-  ndn::DASHPlayerTracer::InstallAll("dash-output-test.txt");
-  ndn::CsTracer::InstallAll("cs-trace.txt", Seconds(1));
+  ndn::DASHPlayerTracer::InstallAll("dash-output-ndn.txt");
+  ndn::CsTracer::InstallAll("cs-trace-ndn.txt", Seconds(1));
   Simulator::Run();
   Simulator::Destroy();
 

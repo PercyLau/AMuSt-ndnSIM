@@ -60,8 +60,8 @@ main(int argc, char* argv[])
   // YansWifiPhy wifiPhy = YansWifiPhy::Default();
   YansWifiPhyHelper wifiPhyHelper = YansWifiPhyHelper::Default();
   wifiPhyHelper.SetChannel(wifiChannel.Create());
-  wifiPhyHelper.Set("TxPowerStart", DoubleValue(1)); //power start and end must be the same
-  wifiPhyHelper.Set("TxPowerEnd", DoubleValue(1));
+  wifiPhyHelper.Set("TxPowerStart", DoubleValue(2)); //power start and end must be the same
+  wifiPhyHelper.Set("TxPowerEnd", DoubleValue(2));
 
   NqosWifiMacHelper wifiMacHelper = NqosWifiMacHelper::Default();
   wifiMacHelper.SetType("ns3::AdhocWifiMac");
@@ -86,7 +86,7 @@ main(int argc, char* argv[])
   mobility.SetMobilityModel("ns3::RandomWalk2dMobilityModel", "Bounds", RectangleValue (Rectangle(0,100,0,100)),"Distance",DoubleValue(4),"Speed",PointerValue(randomizer));
 
   NodeContainer nodes;
-  nodes.Create(9);
+  nodes.Create(4);
 
   ////////////////
   // 1. Install Wifi
@@ -102,24 +102,25 @@ main(int argc, char* argv[])
   // (MyNetDeviceFaceCallback));
   //ndnHelper.SetOldContentStore("ns3::ndn::cs::Lru", "MaxSize", "1");
   ndnHelper.setCsSize(100);
-  ndnHelper.setOpMIPS(1);
+  ndnHelper.setOpMIPS(100000);
   ndnHelper.SetDefaultRoutes(true);
   ndnHelper.Install(nodes.Get(0));
+  ndnHelper.setOpMIPS(1);
   ndnHelper.Install(nodes.Get(1));
   ndnHelper.Install(nodes.Get(2));
 
   //ndnHelper.SetOldContentStore("ns3::ndn::cs::Lru", "MaxSize", "1");
-  ndnHelper.setCsSize(100);
-  ndnHelper.setOpMIPS(10000000);
-  ndnHelper.Install(nodes.Get(3));
-  ndnHelper.Install(nodes.Get(4));
-  ndnHelper.Install(nodes.Get(5));
-  ndnHelper.Install(nodes.Get(6));
-  ndnHelper.Install(nodes.Get(7));
+  //ndnHelper.setCsSize(100);
+  //ndnHelper.setOpMIPS(10000000);
+  //ndnHelper.Install(nodes.Get(3));
+  //ndnHelper.Install(nodes.Get(4));
+  //ndnHelper.Install(nodes.Get(5));
+  //ndnHelper.Install(nodes.Get(6));
+  //ndnHelper.Install(nodes.Get(7));
   
   ndnHelper.setCsSize(1);
   ndnHelper.setOpMIPS(1);
-  ndnHelper.Install(nodes.Get(8));
+  ndnHelper.Install(nodes.Get(3));
   // Set routing strategy
   ndn::StrategyChoiceHelper::Install(nodes, "/", "ndn:/localhost/nfd/strategy/best-routew");
 
@@ -134,14 +135,17 @@ main(int argc, char* argv[])
   consumerHelper.SetAttribute("ScreenHeight", UintegerValue(1080));
   consumerHelper.SetAttribute("StartRepresentationId", StringValue("auto"));
   consumerHelper.SetAttribute("MaxBufferedSeconds", UintegerValue(10));
-  consumerHelper.SetAttribute("StartUpDelay", StringValue("0.1"));
+  consumerHelper.SetAttribute("StartUpDelay", StringValue("0.5"));
   
   consumerHelper.SetAttribute("AdaptationLogic", StringValue("dash::player::RateAndBufferBasedAdaptationLogic"));
   consumerHelper.SetAttribute("MpdFileToRequest", StringValue(std::string("/home/percy/multimediaData/AVC/BBB-2s.mpd" )));
 
-  consumerHelper.Install(nodes.Get(0));
-  consumerHelper.Install(nodes.Get(1));
-  consumerHelper.Install(nodes.Get(2));
+  ApplicationContainer consumer_1 = consumerHelper.Install(nodes.Get(0));
+  consumer_1.Start(Seconds(0.5));
+  ApplicationContainer consumer_2 = consumerHelper.Install(nodes.Get(1));
+  consumer_2.Start(Seconds(1600.0));
+  ApplicationContainer consumer_3 = consumerHelper.Install(nodes.Get(2));
+  consumer_3.Start(Seconds(1600.0));
   //consumerHelper.Install(nodes.Get(3));
   //consumerHelper.Install(nodes.Get(4));
 
@@ -157,12 +161,12 @@ main(int argc, char* argv[])
   ndn::AppHelper mpdProducerHelper("ns3::ndn::FileServer");
   mpdProducerHelper.SetPrefix("/home/percy/multimediaData/AVC/");
   mpdProducerHelper.SetAttribute("ContentDirectory", StringValue("/home/percy/multimediaData/AVC/"));
-  mpdProducerHelper.Install(nodes.Get(8));
+  mpdProducerHelper.Install(nodes.Get(3));
 
   // 6. Set global routing?
   ndn::GlobalRoutingHelper ndnGlobalRoutingHelper;
   ndnGlobalRoutingHelper.InstallAll();
-  ndnGlobalRoutingHelper.AddOrigins("/home/percy/multimediaData/",nodes.Get(8));
+  ndnGlobalRoutingHelper.AddOrigins("/home/percy/multimediaData/",nodes.Get(3));
   ndn::GlobalRoutingHelper::CalculateRoutes();
 
   //producerHelper.Install(nodes.Get(6));
@@ -174,11 +178,11 @@ main(int argc, char* argv[])
   //producerHelper.Install(nodes.Get(8));
   ////////////////
 
-  Simulator::Stop(Seconds(2000));
-  ndn::DASHPlayerTracer::InstallAll("dash-output.txt");
-  ndn::L3RateTracer::InstallAll("rate-trace.txt", Seconds(0.5));
-  //L2RateTracer("L2-output.txt",Seconds(0.5));
-  ndn::AppDelayTracer::InstallAll("app-delays-trace.txt");
+  Simulator::Stop(Seconds(4000));
+  ndn::DASHPlayerTracer::InstallAll("dash-output-oon.txt");
+  //ndn::L3RateTracer::InstallAll("rate-trace-oon.txt", Seconds(0.5));
+  //L2RateTracer("L2-output-oon.txt",Seconds(0.5));
+ // ndn::AppDelayTracer::InstallAll("app-delays-trace.txt");
   //ndn::FileConsumerLogTracer::InstallAll("file-consumer-log-trace.txt");
 
   Simulator::Run();
