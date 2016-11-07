@@ -104,9 +104,10 @@ main(int argc, char* argv[])
   ndnHelper.setCsSize(10);
   ndnHelper.setOpMIPS(1);
   ndnHelper.SetDefaultRoutes(true);
-  ndnHelper.Install(nodes.Get(0));
+  
   ndnHelper.Install(nodes.Get(1));
   ndnHelper.Install(nodes.Get(2));
+  
 
   //ndnHelper.SetOldContentStore("ns3::ndn::cs::Lru", "MaxSize", "1");
   //ndnHelper.setCsSize(100);
@@ -117,11 +118,15 @@ main(int argc, char* argv[])
   //ndnHelper.Install(nodes.Get(6));
   //ndnHelper.Install(nodes.Get(7));
   
-  ndnHelper.setCsSize(1);
+  ndnHelper.setCsSize(10);
+  ndnHelper.SetDefaultRoutes(true);
+  ndnHelper.setOpMIPS(1000);
+  ndnHelper.Install(nodes.Get(0));
+  
   ndnHelper.setOpMIPS(1);
   ndnHelper.Install(nodes.Get(3));
   // Set routing strategy
-  ndn::StrategyChoiceHelper::Install(nodes, "/", "ndn:/localhost/nfd/strategy/best-routew");
+  ndn::StrategyChoiceHelper::Install(nodes, "/", "ndn:/localhost/nfd/strategy/oon");
 
   // 4. Set up client devices
   NS_LOG_INFO("Installing Applications");
@@ -137,14 +142,15 @@ main(int argc, char* argv[])
   consumerHelper.SetAttribute("StartUpDelay", StringValue("0.5"));
   
   consumerHelper.SetAttribute("AdaptationLogic", StringValue("dash::player::RateBasedAdaptationLogic"));
-  consumerHelper.SetAttribute("MpdFileToRequest", StringValue(std::string("/home/lockheed/multimediaData/AVC/BBB-2s-v1.mpd" )));
+  consumerHelper.SetAttribute("MpdFileToRequest", StringValue(std::string("/home/lockheed/multimediaData/AVC/BBB-2s.mpd" )));
 
   ApplicationContainer consumer_0 = consumerHelper.Install(nodes.Get(0));
-  consumer_0.Start(Seconds(0.5));
+  consumer_0.Start(Seconds(0.5)); //precache
+  consumerHelper.SetAttribute("MpdFileToRequest", StringValue(std::string("/home/lockheed/multimediaData/AVC/BBB-2s-v1.mpd" )));
   ApplicationContainer consumer_1 = consumerHelper.Install(nodes.Get(1));
-  consumer_1.Start(Seconds(1000.0));
+  consumer_1.Start(Seconds(1000));
   ApplicationContainer consumer_2 = consumerHelper.Install(nodes.Get(2));
-  consumer_2.Start(Seconds(1000.0));
+  consumer_2.Start(Seconds(1000));
   //consumerHelper.Install(nodes.Get(3));
   //consumerHelper.Install(nodes.Get(4));
 
@@ -161,12 +167,13 @@ main(int argc, char* argv[])
   mpdProducerHelper.SetPrefix("/home/lockheed/multimediaData/AVC/");
   mpdProducerHelper.SetAttribute("ContentDirectory", StringValue("/home/lockheed/multimediaData/AVC/"));
   mpdProducerHelper.Install(nodes.Get(3));
-
+  //mpdProducerHelper.Install(nodes.Get(0));
   // 6. Set global routing?
   ndn::GlobalRoutingHelper ndnGlobalRoutingHelper;
   ndnGlobalRoutingHelper.InstallAll();
   ndnGlobalRoutingHelper.AddOrigins("/home/lockheed/multimediaData/",nodes.Get(3));
-  ndn::GlobalRoutingHelper::CalculateAllPossibleRoutes();
+  //ndnGlobalRoutingHelper.AddOrigins("/home/lockheed/multimediaData/",nodes.Get(0));
+  ndn::GlobalRoutingHelper::CalculateRoutes();
 
   //producerHelper.Install(nodes.Get(6));
   //producerHelper.SetPrefix("/node1/prefix");
@@ -178,7 +185,7 @@ main(int argc, char* argv[])
   ////////////////
 
   Simulator::Stop(Seconds(4000));
-  ndn::DASHPlayerTracer::InstallAll("dash-output-ndn.txt");
+  ndn::DASHPlayerTracer::InstallAll("dash-output-oon.txt");
   //ndn::L3RateTracer::InstallAll("rate-trace-oon.txt", Seconds(0.5));
   //L2RateTracer("L2-output-oon.txt",Seconds(0.5));
  // ndn::AppDelayTracer::InstallAll("app-delays-trace.txt");

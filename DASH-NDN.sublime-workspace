@@ -4,30 +4,6 @@
 		"selected_items":
 		[
 			[
-				"send",
-				"sendInterest"
-			],
-			[
-				"Contn",
-				"ContentStore"
-			],
-			[
-				"shar",
-				"shared_from_this"
-			],
-			[
-				"m_op",
-				"m_opFromNdnSim"
-			],
-			[
-				"shart",
-				"shared_ptr"
-			],
-			[
-				"it",
-				"it_op"
-			],
-			[
 				"set",
 				"setOpMIPS"
 			],
@@ -36,24 +12,12 @@
 				"ndnHelper"
 			],
 			[
-				"m_",
-				"m_maxMIPS"
+				"size",
+				"size_t"
 			],
 			[
 				"Set",
-				"SetTypeId"
-			],
-			[
-				"in",
-				"interest"
-			],
-			[
-				"can",
-				"canForwardTo"
-			],
-			[
-				"Face",
-				"FaceId"
+				"SetType"
 			],
 			[
 				"wif",
@@ -66,6 +30,10 @@
 			[
 				"make",
 				"makeNullFace"
+			],
+			[
+				"Face",
+				"FaceUri"
 			],
 			[
 				"FACE",
@@ -99,8 +67,85 @@
 			"file": "examples/ndn-avc-wifi.cpp",
 			"settings":
 			{
-				"buffer_size": 8108,
+				"buffer_size": 8364,
 				"encoding": "UTF-8",
+				"line_ending": "Unix"
+			}
+		},
+		{
+			"contents": "/* -*- Mode:C++; c-file-style:\"gnu\"; indent-tabs-mode:nil; -*- */\n/**\n * Copyright (c) 2015 Christian Kreuzberger and Daniel Posch, Alpen-Adria-University \n * Klagenfurt\n *\n * This file is part of amus-ndnSIM, based on ndnSIM. See AUTHORS for complete list of \n * authors and contributors.\n *\n * amus-ndnSIM and ndnSIM are free software: you can redistribute it and/or modify it \n * under the terms of the GNU General Public License as published by the Free Software \n * Foundation, either version 3 of the License, or (at your option) any later version.\n *\n * amus-ndnSIM is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;\n * without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR\n * PURPOSE.  See the GNU General Public License for more details.\n *\n * You should have received a copy of the GNU General Public License along with\n * amus-ndnSIM, e.g., in COPYING.md file.  If not, see <http://www.gnu.org/licenses/>.\n **/\n\n#include \"ns3/core-module.h\"\n#include \"ns3/network-module.h\"\n#include \"ns3/point-to-point-module.h\"\n#include \"ns3/ndnSIM-module.h\"\n#include \"ns3/ndnSIM/apps/ndn-app.hpp\"\n\nnamespace ns3 {\n\nint\nmain(int argc, char* argv[])\n{\n  // setting default parameters for PointToPoint links and channels\n  Config::SetDefault(\"ns3::PointToPointNetDevice::DataRate\", StringValue(\"10Mbps\"));\n  Config::SetDefault(\"ns3::PointToPointChannel::Delay\", StringValue(\"10ms\"));\n  Config::SetDefault(\"ns3::DropTailQueue::MaxPackets\", StringValue(\"20\"));\n\n  // Read optional command-line parameters (e.g., enable visualizer with ./waf --run=<> --visualize\n  CommandLine cmd;\n  cmd.Parse(argc, argv);\n\n  // Creating nodes\n  NodeContainer nodes;\n  nodes.Create(3); // 3 nodes, connected: 0 <---> 1 <---> 2\n\n  // Connecting nodes using two links\n  PointToPointHelper p2p;\n  p2p.Install(nodes.Get(0), nodes.Get(1));\n  p2p.Install(nodes.Get(1), nodes.Get(2));\n\n  // Install NDN stack on all nodes\n  ndn::StackHelper ndnHelper;\n  ndnHelper.SetDefaultRoutes(true);\n  ndnHelper.setCsSize(0);\n  ndnHelper.SetOldContentStore(\"ns3::ndn::cs::Lru\", \"MaxSize\", \"100\");\n  ndnHelper.InstallAll();\n\n  // Choosing forwarding strategy\n  ndn::StrategyChoiceHelper::InstallAll(\"/myprefix\", \"/localhost/nfd/strategy/best-route\");\n\n  // Installing multimedia consumer\n  ns3::ndn::AppHelper consumerHelper(\"ns3::ndn::FileConsumerCbr::MultimediaConsumer\");\n  consumerHelper.SetAttribute(\"AllowUpscale\", BooleanValue(true));\n  consumerHelper.SetAttribute(\"AllowDownscale\", BooleanValue(false));\n  consumerHelper.SetAttribute(\"ScreenWidth\", UintegerValue(1920));\n  consumerHelper.SetAttribute(\"ScreenHeight\", UintegerValue(1080));\n  consumerHelper.SetAttribute(\"StartRepresentationId\", StringValue(\"auto\"));\n  consumerHelper.SetAttribute(\"MaxBufferedSeconds\", UintegerValue(30));\n  consumerHelper.SetAttribute(\"StartUpDelay\", StringValue(\"0.1\"));\n\n  consumerHelper.SetAttribute(\"AdaptationLogic\", StringValue(\"dash::player::SVCBufferBasedAdaptationLogic\"));\n  consumerHelper.SetAttribute(\"MpdFileToRequest\", StringValue(std::string(\"/myprefix/SVC/BBB-III.mpd\" )));\n\n  ApplicationContainer app1 = consumerHelper.Install (nodes.Get(2));\n\n   // Producer\n  ndn::AppHelper producerHelper(\"ns3::ndn::FileServer\");\n\n  // Producer will reply to all requests starting with /myprefix\n  producerHelper.SetPrefix(\"/myprefix\");\n  producerHelper.SetAttribute(\"ContentDirectory\", StringValue(\"/home/someuser/multimediaData\"));\n  producerHelper.Install(nodes.Get(0)); // install to some node from nodelist\n\n  ndn::GlobalRoutingHelper ndnGlobalRoutingHelper;\n  ndnGlobalRoutingHelper.InstallAll();\n\n  ndnGlobalRoutingHelper.AddOrigins(\"/myprefix\", nodes.Get(0));\n  ndn::GlobalRoutingHelper::CalculateRoutes();\n\n  Simulator::Stop(Seconds(1200.0));\n\n  ndn::DASHPlayerTracer::InstallAll(\"dash-output-svc.txt\");\n  ndn::CsTracer::InstallAll(\"cs-trace-svc.txt\", Seconds(1));\n\n  Simulator::Run();\n  Simulator::Destroy();\n\n  NS_LOG_UNCOND(\"Simulation Finished.\");\n\n  return 0;\n}\n\n} // namespace ns3\n\nint\nmain(int argc, char* argv[])\n{\n  return ns3::main(argc, argv);\n}\n\n\n",
+			"file": "examples/ndn-multimedia-simple-svc-example2-tracers.cpp",
+			"file_size": 4061,
+			"file_write_time": 131218557930608525,
+			"settings":
+			{
+				"buffer_size": 4069,
+				"line_ending": "Unix"
+			}
+		},
+		{
+			"file": "examples/oon-multimedia-brite-example1.cpp",
+			"settings":
+			{
+				"buffer_size": 7163,
+				"encoding": "UTF-8",
+				"line_ending": "Unix"
+			}
+		},
+		{
+			"contents": "#include \"ns3/core-module.h\"\n#include \"ns3/network-module.h\"\n#include \"ns3/applications-module.h\"\n#include \"ns3/wifi-module.h\"\n#include \"ns3/mobility-module.h\"\n#include \"ns3/internet-module.h\"\n#include \"ns3/ndnSIM/apps/ndn-app.hpp\"\n#include \"ns3/ndnSIM-module.h\"\n\nusing namespace std;\nnamespace ns3 {\n\n\nNS_LOG_COMPONENT_DEFINE(\"ndn.AVC.WiFiExample\");\n\nvoid\nFileDownloadedTrace(Ptr<ns3::ndn::App> app, shared_ptr<const ndn::Name> interestName, double downloadSpeed, long milliSeconds)\n{\n  std::cout << \"Trace: File finished downloading: \" << Simulator::Now().GetMilliSeconds () << \" \"<< *interestName <<\n     \" Download Speed: \" << downloadSpeed/1000.0 << \" Kilobit/s in \" << milliSeconds << \" ms\" << std::endl;\n}\n\nvoid\nFileDownloadedManifestTrace(Ptr<ns3::ndn::App> app, shared_ptr<const ndn::Name> interestName, long fileSize)\n{\n  std::cout << \"Trace: Manifest received: \" << Simulator::Now().GetMilliSeconds () <<\" \"<< *interestName << \" File Size: \" << fileSize << std::endl;\n}\n\nvoid\nFileDownloadStartedTrace(Ptr<ns3::ndn::App> app, shared_ptr<const ndn::Name> interestName)\n{\n  std::cout << \"Trace: File started downloading: \" << Simulator::Now().GetMilliSeconds () <<\" \"<< *interestName << std::endl;\n}\n\nint\nmain(int argc, char* argv[])\n{\n  // disable fragmentation\n  Config::SetDefault(\"ns3::WifiRemoteStationManager::FragmentationThreshold\", StringValue(\"2200\"));\n  Config::SetDefault(\"ns3::WifiRemoteStationManager::RtsCtsThreshold\", StringValue(\"2200\"));\n  Config::SetDefault(\"ns3::WifiRemoteStationManager::NonUnicastMode\",\n                     StringValue(\"OfdmRate24Mbps\"));\n\n  CommandLine cmd;\n  cmd.Parse(argc, argv);\n\n  //////////////////////\n  //////////////////////\n  //////////////////////\n  WifiHelper wifi = WifiHelper::Default();\n  wifi.SetRemoteStationManager (\"ns3::AarfWifiManager\");\n  wifi.SetStandard(WIFI_PHY_STANDARD_80211a);\n  //wifi.SetRemoteStationManager(\"ns3::ConstantRateWifiManager\", \"DataMode\", StringValue(\"OfdmRate24Mbps\"));\n\n  YansWifiChannelHelper wifiChannel; // = YansWifiChannelHelper::Default ();\n  wifiChannel.SetPropagationDelay(\"ns3::ConstantSpeedPropagationDelayModel\");\n  wifiChannel.AddPropagationLoss(\"ns3::ThreeLogDistancePropagationLossModel\");\n  wifiChannel.AddPropagationLoss(\"ns3::NakagamiPropagationLossModel\");\n\n  // YansWifiPhy wifiPhy = YansWifiPhy::Default();\n  YansWifiPhyHelper wifiPhyHelper = YansWifiPhyHelper::Default();\n  wifiPhyHelper.SetChannel(wifiChannel.Create());\n  wifiPhyHelper.Set(\"TxPowerStart\", DoubleValue(2)); //power start and end must be the same\n  wifiPhyHelper.Set(\"TxPowerEnd\", DoubleValue(2));\n\n  NqosWifiMacHelper wifiMacHelper = NqosWifiMacHelper::Default();\n  wifiMacHelper.SetType(\"ns3::AdhocWifiMac\");\n\n  Ptr<UniformRandomVariable> randomizer = CreateObject<UniformRandomVariable>();\n  randomizer->SetAttribute(\"Min\", DoubleValue(1)); // \n  randomizer->SetAttribute(\"Max\", DoubleValue(10));\n\n  MobilityHelper mobility;\n  mobility.SetPositionAllocator(\"ns3::RandomBoxPositionAllocator\", \"X\", PointerValue(randomizer),\n                                \"Y\", PointerValue(randomizer), \"Z\", PointerValue(randomizer));\n  //mobility.SetMobilityModel(\"ns3::ConstantPositionMobilityModel\");\n  //mobility.SetPositionAllocator (\"ns3::GridPositionAllocator\",\n  //                               \"MinX\", DoubleValue (0.0),\n  //                               \"MinY\", DoubleValue (50.0),\n  //                               \"DeltaX\", DoubleValue (10.0),\n  //                               \"DeltaY\", DoubleValue (10.0),\n  //                               \"GridWidth\", UintegerValue (10),\n  //                              \"LayoutType\", StringValue (\"RowFirst\"));\n\n\n  mobility.SetMobilityModel(\"ns3::RandomWalk2dMobilityModel\", \"Bounds\", RectangleValue (Rectangle(0,100,0,100)),\"Distance\",DoubleValue(4),\"Speed\",PointerValue(randomizer));\n\n  NodeContainer nodes;\n  nodes.Create(4);\n\n  ////////////////\n  // 1. Install Wifi\n  NetDeviceContainer wifiNetDevices = wifi.Install(wifiPhyHelper, wifiMacHelper, nodes);\n\n  // 2. Install Mobility model\n  mobility.Install(nodes);\n\n  // 3. Install NDN stack\n  NS_LOG_INFO(\"Installing NDN stack\");\n  ndn::StackHelper ndnHelper;\n  // ndnHelper.AddNetDeviceFaceCreateCallback (WifiNetDevice::GetTypeId (), MakeCallback\n  // (MyNetDeviceFaceCallback));\n  //ndnHelper.SetOldContentStore(\"ns3::ndn::cs::Lru\", \"MaxSize\", \"1\");\n  ndnHelper.setCsSize(10);\n  ndnHelper.setOpMIPS(1);\n  ndnHelper.SetDefaultRoutes(true);\n  \n  ndnHelper.Install(nodes.Get(1));\n  ndnHelper.Install(nodes.Get(2));\n  \n\n  //ndnHelper.SetOldContentStore(\"ns3::ndn::cs::Lru\", \"MaxSize\", \"1\");\n  //ndnHelper.setCsSize(100);\n  //ndnHelper.setOpMIPS(10000000);\n  //ndnHelper.Install(nodes.Get(3));\n  //ndnHelper.Install(nodes.Get(4));\n  //ndnHelper.Install(nodes.Get(5));\n  //ndnHelper.Install(nodes.Get(6));\n  //ndnHelper.Install(nodes.Get(7));\n  \n  ndnHelper.setCsSize(10);\n  ndnHelper.SetDefaultRoutes(true);\n  ndnHelper.setOpMIPS(1000);\n  ndnHelper.Install(nodes.Get(0));\n  \n  ndnHelper.setOpMIPS(1);\n  ndnHelper.Install(nodes.Get(3));\n  // Set routing strategy\n  ndn::StrategyChoiceHelper::Install(nodes, \"/\", \"ndn:/localhost/nfd/strategy/oon\");\n\n  // 4. Set up client devices\n  NS_LOG_INFO(\"Installing Applications\");\n\n  //set up mobile video consumer\n  ns3::ndn::AppHelper consumerHelper(\"ns3::ndn::FileConsumerCbr::MultimediaConsumer\");\n  consumerHelper.SetAttribute(\"AllowUpscale\", BooleanValue(true));\n  consumerHelper.SetAttribute(\"AllowDownscale\", BooleanValue(true));\n  consumerHelper.SetAttribute(\"ScreenWidth\", UintegerValue(1920));\n  consumerHelper.SetAttribute(\"ScreenHeight\", UintegerValue(1080));\n  consumerHelper.SetAttribute(\"StartRepresentationId\", StringValue(\"auto\"));\n  consumerHelper.SetAttribute(\"MaxBufferedSeconds\", UintegerValue(10));\n  consumerHelper.SetAttribute(\"StartUpDelay\", StringValue(\"0.5\"));\n  \n  consumerHelper.SetAttribute(\"AdaptationLogic\", StringValue(\"dash::player::RateBasedAdaptationLogic\"));\n  consumerHelper.SetAttribute(\"MpdFileToRequest\", StringValue(std::string(\"/home/lockheed/multimediaData/AVC/BBB-2s.mpd\" )));\n\n  ApplicationContainer consumer_0 = consumerHelper.Install(nodes.Get(0));\n  consumer_0.Start(Seconds(0.5)); //precache\n  consumerHelper.SetAttribute(\"MpdFileToRequest\", StringValue(std::string(\"/home/lockheed/multimediaData/AVC/BBB-2s-v1.mpd\" )));\n  ApplicationContainer consumer_1 = consumerHelper.Install(nodes.Get(1));\n  consumer_1.Start(Seconds(1000));\n  ApplicationContainer consumer_2 = consumerHelper.Install(nodes.Get(2));\n  consumer_2.Start(Seconds(1000));\n  //consumerHelper.Install(nodes.Get(3));\n  //consumerHelper.Install(nodes.Get(4));\n\n      // Connect Tracers\n  Config::ConnectWithoutContext(\"/NodeList/*/ApplicationList/*/FileDownloadFinished\",\n                               MakeCallback(&FileDownloadedTrace));\n  Config::ConnectWithoutContext(\"/NodeList/*/ApplicationList/*/ManifestReceived\",\n                               MakeCallback(&FileDownloadedManifestTrace));\n  Config::ConnectWithoutContext(\"/NodeList/*/ApplicationList/*/FileDownloadStarted\",\n                               MakeCallback(&FileDownloadStartedTrace));\n\n  // 5. Set up server devices\n  ndn::AppHelper mpdProducerHelper(\"ns3::ndn::FileServer\");\n  mpdProducerHelper.SetPrefix(\"/home/lockheed/multimediaData/AVC/\");\n  mpdProducerHelper.SetAttribute(\"ContentDirectory\", StringValue(\"/home/lockheed/multimediaData/AVC/\"));\n  mpdProducerHelper.Install(nodes.Get(3));\n  //mpdProducerHelper.Install(nodes.Get(0));\n  // 6. Set global routing?\n  ndn::GlobalRoutingHelper ndnGlobalRoutingHelper;\n  ndnGlobalRoutingHelper.InstallAll();\n  ndnGlobalRoutingHelper.AddOrigins(\"/home/lockheed/multimediaData/\",nodes.Get(3));\n  //ndnGlobalRoutingHelper.AddOrigins(\"/home/lockheed/multimediaData/\",nodes.Get(0));\n  ndn::GlobalRoutingHelper::CalculateAllPossibleRoutes();\n\n  //producerHelper.Install(nodes.Get(6));\n  //producerHelper.SetPrefix(\"/node1/prefix\");\n  //producerHelper.SetAttribute(\"PayloadSize\", StringValue(\"1500\"));\n  //producerHelper.Install(nodes.Get(7));\n  //producerHelper.SetPrefix(\"/\");\n  //producerHelper.SetAttribute(\"PayloadSize\", StringValue(\"1500\"));\n  //producerHelper.Install(nodes.Get(8));\n  ////////////////\n\n  Simulator::Stop(Seconds(4000));\n  ndn::DASHPlayerTracer::InstallAll(\"dash-output-oon.txt\");\n  //ndn::L3RateTracer::InstallAll(\"rate-trace-oon.txt\", Seconds(0.5));\n  //L2RateTracer(\"L2-output-oon.txt\",Seconds(0.5));\n // ndn::AppDelayTracer::InstallAll(\"app-delays-trace.txt\");\n  //ndn::FileConsumerLogTracer::InstallAll(\"file-consumer-log-trace.txt\");\n\n  Simulator::Run();\n  Simulator::Destroy();\n\n  NS_LOG_UNCOND(\"Simulation Finished.\");\n  return 0;\n}\n\n} // namespace ns3\n\nint\nmain(int argc, char* argv[])\n{\n  return ns3::main(argc, argv);\n}",
+			"file": "examples/oon-avc-wifi.cpp",
+			"file_size": 8683,
+			"file_write_time": 131225421303360341,
+			"settings":
+			{
+				"buffer_size": 8694,
+				"line_ending": "Unix"
+			}
+		},
+		{
+			"file": "NFD/daemon/fw/forwarder.cpp",
+			"settings":
+			{
+				"buffer_size": 18918,
+				"encoding": "UTF-8",
+				"line_ending": "Unix"
+			}
+		},
+		{
+			"file": "NFD/daemon/fw/oon-strategy.cpp",
+			"settings":
+			{
+				"buffer_size": 3693,
+				"encoding": "UTF-8",
+				"line_ending": "Unix"
+			}
+		},
+		{
+			"contents": "/* -*- Mode:C++; c-file-style:\"gnu\"; indent-tabs-mode:nil; -*- */\n/**\n * Copyright (c) 2014-2015,  Regents of the University of California,\n *                           Arizona Board of Regents,\n *                           Colorado State University,\n *                           University Pierre & Marie Curie, Sorbonne University,\n *                           Washington University in St. Louis,\n *                           Beijing Institute of Technology,\n *                           The University of Memphis.\n *\n * This file is part of NFD (Named Data Networking Forwarding Daemon).\n * See AUTHORS.md for complete list of NFD authors and contributors.\n *\n * NFD is free software: you can redistribute it and/or modify it under the terms\n * of the GNU General Public License as published by the Free Software Foundation,\n * either version 3 of the License, or (at your option) any later version.\n *\n * NFD is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;\n * without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR\n * PURPOSE.  See the GNU General Public License for more details.\n *\n * You should have received a copy of the GNU General Public License along with\n * NFD, e.g., in COPYING.md file.  If not, see <http://www.gnu.org/licenses/>.\n */\n\n#ifndef NFD_DAEMON_FW_STRATEGY_HPP\n#define NFD_DAEMON_FW_STRATEGY_HPP\n\n#include \"forwarder.hpp\"\n#include \"strategy-registry.hpp\"\n#include \"table/measurements-accessor.hpp\"\n\nnamespace nfd {\nnamespace fw {\n\n/** \\brief represents a forwarding strategy\n */\nclass Strategy : public enable_shared_from_this<Strategy>, noncopyable\n{\npublic:\n  /** \\brief construct a strategy instance\n   *  \\param forwarder a reference to the Forwarder, used to enable actions and accessors.\n   *         Strategy subclasses should pass this reference,\n   *         and should not keep a reference themselves.\n   *  \\param name the strategy Name.\n   *         It's recommended to include a version number as the last component.\n   */\n  Strategy(Forwarder& forwarder, const Name& name);\n\n  virtual\n  ~Strategy();\n\n  /// a Name that represent the Strategy program\n  const Name&\n  getName() const;\n\npublic: // triggers\n  /** \\brief trigger after Interest is received\n   *\n   *  The Interest:\n   *  - does not violate Scope\n   *  - is not looped\n   *  - cannot be satisfied by ContentStore\n   *  - is under a namespace managed by this strategy\n   *\n   *  The strategy should decide whether and where to forward this Interest.\n   *  - If the strategy decides to forward this Interest,\n   *    invoke this->sendInterest one or more times, either now or shortly after\n   *  - If strategy concludes that this Interest cannot be forwarded,\n   *    invoke this->rejectPendingInterest so that PIT entry will be deleted shortly\n   *\n   *  \\note The strategy is permitted to store a weak reference to fibEntry.\n   *        Do not store a shared reference, because PIT entry may be deleted at any moment.\n   *        fibEntry is passed by value to allow obtaining a weak reference from it.\n   *  \\note The strategy is permitted to store a shared reference to pitEntry.\n   *        pitEntry is passed by value to reflect this fact.\n   */\n  virtual void\n  afterReceiveInterest(const Face& inFace,\n                       const Interest& interest,\n                       shared_ptr<fib::Entry> fibEntry,\n                       shared_ptr<pit::Entry> pitEntry) = 0;\n\n  /** \\brief trigger before PIT entry is satisfied\n   *\n   *  This trigger is invoked when an incoming Data satisfies the PIT entry.\n   *  It can be invoked even if the PIT entry has already been satisfied.\n   *\n   *  In this base class this method does nothing.\n   *\n   *  \\note The strategy is permitted to store a shared reference to pitEntry.\n   *        pitEntry is passed by value to reflect this fact.\n   */\n  virtual void\n  beforeSatisfyInterest(shared_ptr<pit::Entry> pitEntry,\n                        const Face& inFace, const Data& data);\n\n  /** \\brief trigger before PIT entry expires\n   *\n   *  PIT entry expires when InterestLifetime has elapsed for all InRecords,\n   *  and it is not satisfied by an incoming Data.\n   *\n   *  This trigger is not invoked for PIT entry already satisfied.\n   *\n   *  In this base class this method does nothing.\n   *\n   *  \\note The strategy is permitted to store a shared reference to pitEntry.\n   *        pitEntry is passed by value to reflect this fact.\n   */\n  virtual void\n  beforeExpirePendingInterest(shared_ptr<pit::Entry> pitEntry);\n\nprotected: // actions\n  /// send Interest to outFace\n  VIRTUAL_WITH_TESTS void\n  sendInterest(shared_ptr<pit::Entry> pitEntry,\n               shared_ptr<Face> outFace,\n               bool wantNewNonce = false);\n\n  VIRTUAL_WITH_TESTS void\n  startObjectProcessing(shared_ptr<pit::Entry> pitEntry,\n               shared_ptr<Face> outFace,\n               const Interest& interest);\n\n  /** \\brief decide that a pending Interest cannot be forwarded\n   *\n   *  This shall not be called if the pending Interest has been\n   *  forwarded earlier, and does not need to be resent now.\n   */\n  VIRTUAL_WITH_TESTS void\n  rejectPendingInterest(shared_ptr<pit::Entry> pitEntry);\n\nprotected: // accessors\n  MeasurementsAccessor&\n  getMeasurements();\n\n  shared_ptr<Face>\n  getFace(FaceId id);\n\n  const FaceTable&\n  getFaceTable();\n\nprotected: // accessors\n  signal::Signal<FaceTable, shared_ptr<Face>>& afterAddFace;\n  signal::Signal<FaceTable, shared_ptr<Face>>& beforeRemoveFace;\n\nprivate:\n  Name m_name;\n\n  /** \\brief reference to the forwarder\n   *\n   *  Triggers can access forwarder indirectly via actions.\n   */\n  Forwarder& m_forwarder;\n\n  MeasurementsAccessor m_measurements;\n};\n\ninline const Name&\nStrategy::getName() const\n{\n  return m_name;\n}\n\ninline void\nStrategy::sendInterest(shared_ptr<pit::Entry> pitEntry,\n                       shared_ptr<Face> outFace,\n                       bool wantNewNonce)\n{\n  m_forwarder.onOutgoingInterest(pitEntry, *outFace, wantNewNonce);\n}\n\ninline void\nStrategy::startObjectProcessing(shared_ptr<pit::Entry> pitEntry,\n               shared_ptr<Face> outFace,\n               const Interest& interest){\n  //to do revise interest\n  //std::cout<<\"object processing\";\n  if (m_forwarder.m_opFromNdnSim != nullptr){\n    //std::cout<<\"object processing\";\n    shared_ptr<Data> match = m_forwarder.m_opFromNdnSim->Lookup(interest.shared_from_this());\n   //shared_ptr<Data> match = nullptr;\n    if (match != nullptr){\n    m_forwarder.onProcessingData(*match, *outFace);\n    //std::cout<<\"object processing\";\n    //m_forwarder.onOutgoingInterest(pitEntry, *outFace, false);\n    }\n  }else{\n    m_forwarder.onOutgoingInterest(pitEntry, *outFace, true);\n  }\n  m_forwarder.onOutgoingInterest(pitEntry, *outFace, true);\n\n};\n\ninline void\nStrategy::rejectPendingInterest(shared_ptr<pit::Entry> pitEntry)\n{\n  m_forwarder.onInterestReject(pitEntry);\n}\n\ninline MeasurementsAccessor&\nStrategy::getMeasurements()\n{\n  return m_measurements;\n}\n\ninline shared_ptr<Face>\nStrategy::getFace(FaceId id)\n{\n  return m_forwarder.getFace(id);\n}\n\ninline const FaceTable&\nStrategy::getFaceTable()\n{\n  return m_forwarder.getFaceTable();\n}\n\n} // namespace fw\n} // namespace nfd\n\n#endif // NFD_DAEMON_FW_STRATEGY_HPP\n",
+			"file": "NFD/daemon/fw/strategy.hpp",
+			"file_size": 7247,
+			"file_write_time": 131225359989281116,
+			"settings":
+			{
+				"buffer_size": 7227,
+				"line_ending": "Unix"
+			}
+		},
+		{
+			"file": "NFD/daemon/fw/oon-strategy.hpp",
+			"settings":
+			{
+				"buffer_size": 2107,
+				"encoding": "UTF-8",
+				"line_ending": "Unix"
+			}
+		},
+		{
+			"file": "NFD/daemon/table/fib-nexthop.hpp",
+			"settings":
+			{
+				"buffer_size": 1832,
 				"line_ending": "Unix"
 			}
 		}
@@ -173,49 +218,27 @@
 	},
 	"expanded_folders":
 	[
-		"/home/percy/ndnSIM/ns-3/src/ndnSIM",
-		"/home/percy/ndnSIM/ns-3/src/ndnSIM/.waf-tools",
-		"/home/percy/ndnSIM/ns-3/src/ndnSIM/NFD",
-		"/home/percy/ndnSIM/ns-3/src/ndnSIM/NFD/daemon",
-		"/home/percy/ndnSIM/ns-3/src/ndnSIM/examples"
+		"/home/lockheed/oonSIM/ns-3/src/ndnSIM",
+		"/home/lockheed/oonSIM/ns-3/src/ndnSIM/NFD",
+		"/home/lockheed/oonSIM/ns-3/src/ndnSIM/NFD/daemon",
+		"/home/lockheed/oonSIM/ns-3/src/ndnSIM/examples"
 	],
 	"file_history":
 	[
-		"/home/percy/ndnSIM/ns-3/src/ndnSIM/NFD/daemon/fw/strategy.hpp",
-		"/home/percy/ndnSIM/ns-3/src/ndnSIM/NFD/daemon/fw/best-route-strategy.cpp",
-		"/home/percy/ndnSIM/ns-3/src/ndnSIM/examples/ndn-multimedia-simple-avc-example1.cpp",
-		"/home/percy/ndnSIM/ns-3/src/ndnSIM/NFD/daemon/fw/forwarder.hpp",
-		"/home/percy/ndnSIM/ns-3/src/ndnSIM/NFD/daemon/fw/forwarder.cpp",
-		"/home/percy/ndnSIM/ns-3/src/ndnSIM/examples/ndn-avc-wifi.cpp",
-		"/home/percy/multimediaData/AVC/BBB-2s.mpd",
-		"/home/percy/ndnSIM/ns-3/src/ndnSIM/apps/ndn-multimedia-consumer.hpp",
-		"/home/percy/ndnSIM/ns-3/src/ndnSIM/apps/ndn-multimedia-consumer.cpp",
-		"/home/percy/ndnSIM/ns-3/src/ndnSIM/examples/ndn-file-simple-example1.cpp",
-		"/home/percy/ndnSIM/ns-3/src/ndnSIM/apps/ndn-fileserver.cpp",
-		"/home/percy/ndnSIM/ns-3/src/ndnSIM/model/ndn-l3-protocol.cpp",
-		"/home/percy/ndnSIM/ns-3/src/ndnSIM/NFD/daemon/fw/strategy.cpp",
-		"/home/percy/ndnSIM/ns-3/src/ndnSIM/NFD/daemon/fw/best-route-strategy2.hpp",
-		"/home/percy/ndnSIM/ns-3/src/ndnSIM/apps/ndn-app.cpp",
-		"/home/percy/ndnSIM/ns-3/src/ndnSIM/apps/ndn-app.hpp",
-		"/home/percy/ndnSIM/ns-3/src/ndnSIM/NFD/daemon/fw/best-route-strategy.hpp",
-		"/home/percy/ndnSIM/ns-3/src/ndnSIM/examples/ndn-file-simple-example4-multi.cpp",
-		"/home/percy/ndnSIM/ns-3/src/ndnSIM/examples/ndn-file-simple-example2-tracers.cpp",
-		"/home/percy/ndnSIM/ns-3/src/ndnSIM/examples/ndn-file-simple-example3-enhanced.cpp",
-		"/home/percy/ndnSIM/ns-3/src/ndnSIM/NFD/daemon/fw/strategy-registry.cpp",
-		"/home/percy/ndnSIM/ns-3/src/ndnSIM/utils/tracers/ndn-dashplayer-tracer.cpp",
-		"/home/percy/ndnSIM/ns-3/src/ndnSIM/utils/tracers/ndn-dashplayer-tracer.hpp",
-		"/home/percy/ndnSIM/ns-3/src/ndnSIM/examples/ndn-multimedia-avc-server.cpp",
-		"/home/percy/ndnSIM/ns-3/src/ndnSIM/model/cs/ndn-content-store.hpp",
-		"/home/percy/ndnSIM/ns-3/src/ndnSIM/helper/ndn-stack-helper.cpp",
-		"/home/percy/ndnSIM/ns-3/src/ndnSIM/helper/ndn-stack-helper.hpp",
-		"/home/percy/ndnSIM/ns-3/src/ndnSIM/ndn-cxx/src/data.hpp",
-		"/home/percy/ndnSIM/ns-3/src/ndnSIM/ndn-cxx/src/data.cpp",
-		"/home/percy/ndnSIM/ns-3/src/ndnSIM/NFD/tests/daemon/fw/strategy-tester.hpp",
-		"/home/percy/ndnSIM/ns-3/src/ndnSIM/NFD/daemon/face/face.hpp",
-		"/home/percy/ndnSIM/ns-3/src/ndnSIM/examples/ndn-simple.cpp",
-		"/home/percy/ndnSIM/ns-3/src/ndnSIM/examples/ndn-simple-wifi.cpp",
-		"/home/percy/multimediaData/AVC/BBB/BigBuckBunnyNonSeg_2s_isoffmain_DIS_23009_1_v_2_1c2_2011_08_30.mpd",
-		"/home/percy/multimediaData/AVC/BBB/BigBuckBunny_2s_isoffmain_DIS_23009_1_v_2_1c2_2011_08_30.mpd",
+		"/home/lockheed/oonSIM/ns-3/src/ndnSIM/NFD/daemon/fw/forwarder.cpp",
+		"/home/lockheed/oonSIM/ns-3/src/ndnSIM/NFD/daemon/fw/best-route-strategy.cpp",
+		"/home/lockheed/oonSIM/ns-3/src/ndnSIM/NFD/daemon/fw/best-route-strategy.hpp",
+		"/home/lockheed/oonSIM/ns-3/src/ndnSIM/ndn-cxx/src/data.hpp",
+		"/home/lockheed/oonSIM/ns-3/src/ndnSIM/ndn-cxx/src/encoding/block.hpp",
+		"/home/lockheed/multimediaData/AVC/BBB-2s-v2.mpd",
+		"/home/lockheed/multimediaData/AVC/BBB-2s-v1.mpd",
+		"/home/lockheed/oonSIM/ns-3/src/ndnSIM/ndn-cxx/src/encoding/block.cpp",
+		"/home/lockheed/oonSIM/ns-3/src/ndnSIM/NFD/daemon/fw/oon-strategy.hpp",
+		"/home/lockheed/oonSIM/ns-3/src/ndnSIM/NFD/daemon/fw/oon-strategy.cpp",
+		"/home/lockheed/oonSIM/ns-3/src/ndnSIM/examples/ndn-file-simple-example3-enhanced.cpp",
+		"/home/lockheed/oonSIM/ns-3/src/ndnSIM/examples/ndn-file-simple-example1.cpp",
+		"/home/lockheed/oonSIM/ns-3/src/ndnSIM/examples/ndn-simple.cpp",
+		"/home/lockheed/oonSIM/ns-3/src/ndnSIM/examples/ndn-simple-wifi.cpp",
 		"/home/lockheed/AMuStNDN/ns-3/src/ndnSIM/examples/ndn-file-simple-example4-multi.cpp",
 		"/home/lockheed/AMuStNDN/ns-3/src/ndnSIM/examples/ndn-file-simple-example1.a",
 		"/home/lockheed/AMuStNDN/ns-3/src/ndnSIM/examples/dash-ndn-wifi.cpp",
@@ -276,15 +299,13 @@
 	],
 	"find":
 	{
-		"height": 41.0
+		"height": 35.0
 	},
 	"find_in_files":
 	{
-		"height": 111.0,
+		"height": 0.0,
 		"where_history":
 		[
-			"/home/percy/ndnSIM/ns-3/src/ndnSIM/",
-			"/home/percy/ndnSIM/ns-3/src/ndnSIM/NFD/daemon"
 		]
 	},
 	"find_state":
@@ -292,60 +313,13 @@
 		"case_sensitive": false,
 		"find_history":
 		[
-			"m_cs",
-			"onProcessingData",
-			"Processing",
-			"processing",
-			"m_opFromNdnSim",
-			"setOpFromNdnSim",
-			"setCsFromNdnSim",
-			"m_csFromNdnSim",
-			"      m_csFromNdnSim->Add(data.shared_from_this());\nm_csFromNdnSim",
-			"      m_csFromNdnSim->Add(data.shared_from_this());\nsetCsFromNdnSim",
-			"m_csFromNdnSim",
-			"m_cs",
-			"onOutgoingData",
-			"onContentStoreHit",
-			"Object",
-			"*match",
-			"match",
-			"m_cs",
-			"onContentStoreHit",
-			"beforeSatisfyInterest",
-			"onContentStoreHit",
-			"m_cs",
-			"op",
-			"lockheed",
-			"m_cs",
-			"setCs",
-			"m_maxCsSize",
-			"m_contentStoreFactory",
-			"m_maxCsSize",
 			"sendInterest",
 			"startObjectProcessing",
-			"*match",
-			"match",
 			"onProcessingData",
-			"onContentStore",
-			"onProcessingData",
-			"onObjec",
-			"onProcessingData",
-			"onObjectProcessorHit",
-			"interest",
-			"intere",
-			"onContentStoreHit",
-			"onContentHit",
-			"onObjectProcessorHit",
-			"onContent",
-			"onOb",
-			"onOutgoingData",
-			"onOutData",
-			"onOut",
-			"onContentStoreHit",
-			"OnContent",
-			"canForwardTo",
-			"percy",
-			"~",
+			"object",
+			"/*",
+			"SegmentBase",
+			"value_size",
 			"percy",
 			"OfdmRate54Mbps",
 			"m_csFromNdnSim",
@@ -385,13 +359,13 @@
 	"folders":
 	[
 		{
-			"path": "/home/percy/ndnSIM/ns-3/src/ndnSIM"
+			"path": "/home/lockheed/oonSIM/ns-3/src/ndnSIM"
 		}
 	],
 	"groups":
 	[
 		{
-			"selected": 0,
+			"selected": 1,
 			"sheets":
 			[
 				{
@@ -400,15 +374,15 @@
 					"semi_transient": false,
 					"settings":
 					{
-						"buffer_size": 8108,
+						"buffer_size": 8364,
 						"regions":
 						{
 						},
 						"selection":
 						[
 							[
-								7811,
-								7811
+								7453,
+								7453
 							]
 						],
 						"settings":
@@ -418,10 +392,248 @@
 							"translate_tabs_to_spaces": true
 						},
 						"translation.x": 0.0,
-						"translation.y": 3213.0,
+						"translation.y": 2538.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 1,
+					"type": "text"
+				},
+				{
+					"buffer": 1,
+					"file": "examples/ndn-multimedia-simple-svc-example2-tracers.cpp",
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 4069,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								3855,
+								3855
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/C++/C++.sublime-syntax",
+							"tab_size": 2,
+							"translate_tabs_to_spaces": true
+						},
+						"translation.x": 0.0,
+						"translation.y": 1388.0,
 						"zoom_level": 1.0
 					},
 					"stack_index": 0,
+					"type": "text"
+				},
+				{
+					"buffer": 2,
+					"file": "examples/oon-multimedia-brite-example1.cpp",
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 7163,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								6842,
+								6842
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/C++/C++.sublime-syntax",
+							"tab_size": 2,
+							"translate_tabs_to_spaces": true
+						},
+						"translation.x": 0.0,
+						"translation.y": 2688.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 3,
+					"type": "text"
+				},
+				{
+					"buffer": 3,
+					"file": "examples/oon-avc-wifi.cpp",
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 8694,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								7783,
+								7783
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/C++/C++.sublime-syntax",
+							"tab_size": 2,
+							"translate_tabs_to_spaces": true
+						},
+						"translation.x": -0.0,
+						"translation.y": 2484.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 2,
+					"type": "text"
+				},
+				{
+					"buffer": 4,
+					"file": "NFD/daemon/fw/forwarder.cpp",
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 18918,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								15054,
+								15054
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/C++/C++.sublime-syntax",
+							"tab_size": 2,
+							"translate_tabs_to_spaces": true
+						},
+						"translation.x": 0.0,
+						"translation.y": 7638.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 4,
+					"type": "text"
+				},
+				{
+					"buffer": 5,
+					"file": "NFD/daemon/fw/oon-strategy.cpp",
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 3693,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								1386,
+								1386
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/C++/C++.sublime-syntax",
+							"tab_size": 2,
+							"translate_tabs_to_spaces": true
+						},
+						"translation.x": 0.0,
+						"translation.y": 0.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 5,
+					"type": "text"
+				},
+				{
+					"buffer": 6,
+					"file": "NFD/daemon/fw/strategy.hpp",
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 7227,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								1478,
+								1478
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/C++/C++.sublime-syntax",
+							"tab_size": 2,
+							"translate_tabs_to_spaces": true
+						},
+						"translation.x": 0.0,
+						"translation.y": 0.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 6,
+					"type": "text"
+				},
+				{
+					"buffer": 7,
+					"file": "NFD/daemon/fw/oon-strategy.hpp",
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 2107,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								1591,
+								1591
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/C++/C++.sublime-syntax"
+						},
+						"translation.x": 0.0,
+						"translation.y": 108.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 7,
+					"type": "text"
+				},
+				{
+					"buffer": 8,
+					"file": "NFD/daemon/table/fib-nexthop.hpp",
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 1832,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								1737,
+								1737
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/C++/C++.sublime-syntax",
+							"tab_size": 2,
+							"translate_tabs_to_spaces": true
+						},
+						"translation.x": 0.0,
+						"translation.y": 438.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 8,
 					"type": "text"
 				}
 			]
@@ -493,14 +705,10 @@
 	},
 	"select_symbol":
 	{
-		"height": 450.0,
-		"last_filter": "content",
+		"height": 54.0,
+		"last_filter": "onContentStoreHit",
 		"selected_items":
 		[
-			[
-				"content",
-				"ContentStore"
-			],
 			[
 				"onContentStoreHit",
 				"onContentStoreHit"
@@ -538,7 +746,7 @@
 				"CacheHits"
 			]
 		],
-		"width": 678.0
+		"width": 1289.0
 	},
 	"selected_group": 0,
 	"settings":
@@ -548,7 +756,7 @@
 	"show_open_files": true,
 	"show_tabs": true,
 	"side_bar_visible": true,
-	"side_bar_width": 548.0,
+	"side_bar_width": 293.0,
 	"status_bar_visible": true,
 	"template_settings":
 	{
