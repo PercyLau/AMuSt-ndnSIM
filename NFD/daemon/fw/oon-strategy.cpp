@@ -86,6 +86,7 @@ OONRouteStrategy::afterReceiveInterest(const Face& inFace,
      else{
       //this->sendInterest(pitEntry,it_op->getFace());
       this->startObjectProcessing(pitEntry,it_op->getFace(),interest);
+      return;
      }
     //NFD_LOG_DEBUG(interest << " from=" << inFace.getId() << " noNextHop");
     this->rejectPendingInterest(pitEntry);

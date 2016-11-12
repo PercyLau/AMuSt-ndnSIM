@@ -137,11 +137,22 @@ PUBLIC_WITH_TESTS_ELSE_PRIVATE: // pipelines
   void
   onContentStoreMiss(const Face& inFace, shared_ptr<pit::Entry> pitEntry, const Interest& interest);
 
+
+  //OON
+  void
+  onObjectProcessorMiss(const Face& inFace, shared_ptr<pit::Entry> pitEntry, const Interest& interest);
+
   /** \brief Content Store hit pipeline
   */
   void
   onContentStoreHit(const Face& inFace, shared_ptr<pit::Entry> pitEntry,
                     const Interest& interest, const Data& data);
+
+//OON
+  void
+  onProcessingData(const Face& inFace, const Interest& interest, const Data& data);
+//void Forwarder::onProcessingData(Face& outFace, const Interest& interest, const Data& data)
+
 
   /** \brief Interest loop pipeline
    */
@@ -187,10 +198,6 @@ PUBLIC_WITH_TESTS_ELSE_PRIVATE: // pipelines
    */
   VIRTUAL_WITH_TESTS void
   onOutgoingData(const Data& data, Face& outFace);
-
-//OON
-   VIRTUAL_WITH_TESTS  void
-  onProcessingData(const Data& data, Face& outFace);
 
 PROTECTED_WITH_TESTS_ELSE_PRIVATE:
   VIRTUAL_WITH_TESTS void

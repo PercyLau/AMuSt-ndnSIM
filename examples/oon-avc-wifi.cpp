@@ -185,10 +185,10 @@ main(int argc, char* argv[])
   ////////////////
 
   Simulator::Stop(Seconds(4000));
-  ndn::DASHPlayerTracer::InstallAll("dash-output-oon.txt");
+  //ndn::DASHPlayerTracer::InstallAll("dash-output-oon.txt");
   //ndn::L3RateTracer::InstallAll("rate-trace-oon.txt", Seconds(0.5));
-  //L2RateTracer("L2-output-oon.txt",Seconds(0.5));
- // ndn::AppDelayTracer::InstallAll("app-delays-trace.txt");
+  //L2RateTracer::InstallAll("L2-output-oon.txt",Seconds(0.5));
+  //ndn::AppDelayTracer::InstallAll("app-delays-trace-oon.txt");
   //ndn::FileConsumerLogTracer::InstallAll("file-consumer-log-trace.txt");
 
   Simulator::Run();

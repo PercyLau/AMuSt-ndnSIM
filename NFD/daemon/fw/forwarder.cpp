@@ -100,15 +100,26 @@ Forwarder::onIncomingInterest(Face& inFace, const Interest& interest)
   bool isPending = inRecords.begin() != inRecords.end();
   if (!isPending) {
     if (m_csFromNdnSim == nullptr) {
+      /*Cs::find(const Interest& interest,
+         const HitCallback& hitCallback,
+         const MissCallback& missCallback) const*/
+      /*
+        Forwarder::onContentStoreHit(const Face& inFace,
+                             shared_ptr<pit::Entry> pitEntry,
+                             const Interest& interest,
+                             const Data& data)
+
+        void
+        Forwarder::onContentStoreMiss(const Face& inFace,
+                              shared_ptr<pit::Entry> pitEntry,
+                              const Interest& interest)
+        onProcessingData(const Face& inFace, const Interest& interest, const Data& data);
+      */
+
       m_cs.find(interest,
                 bind(&Forwarder::onContentStoreHit, this, ref(inFace), pitEntry, _1, _2),
                 bind(&Forwarder::onContentStoreMiss, this, ref(inFace), pitEntry, _1));
       //OON
-      if (m_opFromNdnSim == nullptr) {
-          m_op.find(interest,
-                    bind(&Forwarder::onContentStoreHit, this, ref(inFace), pitEntry, _1, _2),
-                    bind(&Forwarder::onContentStoreMiss, this, ref(inFace), pitEntry, _1));
-        }
     }
     else {
       shared_ptr<Data> match = m_csFromNdnSim->Lookup(interest.shared_from_this());
@@ -116,17 +127,17 @@ Forwarder::onIncomingInterest(Face& inFace, const Interest& interest)
         this->onContentStoreHit(inFace, pitEntry, interest, *match);
       }
       else {
-        this->onContentStoreMiss(inFace, pitEntry, interest);
+        this->onObjectProcessorMiss(inFace, pitEntry, interest);
       }
     }
   }
   else {
-    this->onContentStoreMiss(inFace, pitEntry, interest);
+    this->onObjectProcessorMiss(inFace, pitEntry, interest);
   }
 }
 
 void
-Forwarder::onContentStoreMiss(const Face& inFace,
+Forwarder::onObjectProcessorMiss(const Face& inFace,
                               shared_ptr<pit::Entry> pitEntry,
                               const Interest& interest)
 {
@@ -145,6 +156,18 @@ Forwarder::onContentStoreMiss(const Face& inFace,
   // dispatch to strategy
   this->dispatchToStrategy(pitEntry, bind(&Strategy::afterReceiveInterest, _1,
                                           cref(inFace), cref(interest), fibEntry, pitEntry));
+}
+
+void
+Forwarder::onContentStoreMiss(const Face& inFace,
+                              shared_ptr<pit::Entry> pitEntry,
+                              const Interest& interest)
+{
+    if (m_opFromNdnSim == nullptr) {
+      m_op.find(interest,
+                bind(&Forwarder::onProcessingData, this, ref(inFace), _1, _2),
+                bind(&Forwarder::onObjectProcessorMiss, this, ref(inFace), pitEntry, _1));
+    }
 }
 
 
@@ -170,6 +193,27 @@ Forwarder::onContentStoreHit(const Face& inFace,
   this->onOutgoingData(data, *const_pointer_cast<Face>(inFace.shared_from_this()));
 }
 
+//OON
+void
+Forwarder::onProcessingData(const Face& inFace, const Interest& interest, const Data& data)
+{   //todo
+    //volatile size_t i = 1;
+    //size_t size = data.getContent().value_size();
+    //for (i = 1; i < size; i++); //to do data processing
+    //onOutgoingData(data,outFace);
+     const_pointer_cast<Data>(data.shared_from_this())->setIncomingFaceId(FACEID_OBJECT_PROCESSOR);
+    if (inFace.getId() == INVALID_FACEID) {
+      NFD_LOG_WARN("onOutgoingData face=invalid data=" << data.getName());
+      return;
+      //drop
+    }
+    NFD_LOG_DEBUG("onOutgoingData face=" << inFace.getId() << " data=" << data.getName());
+    const_pointer_cast<Face>(inFace.shared_from_this())->sendData(data);
+    ++m_counters.getNOutDatas();
+    return;
+  }
+
+
 void
 Forwarder::onInterestLoop(Face& inFace, const Interest& interest,
                           shared_ptr<pit::Entry> pitEntry)
@@ -184,7 +228,7 @@ Forwarder::onInterestLoop(Face& inFace, const Interest& interest,
     shared_ptr<Data> match = this->m_opFromNdnSim->Lookup(interest.shared_from_this());
     NFD_LOG_DEBUG("onObjectProcessor interest=" << interest.getName());
     if (match != nullptr){
-      onProcessingData(*match, *const_pointer_cast<Face>(inFace.shared_from_this()));
+      onProcessingData(*const_pointer_cast<Face>(inFace.shared_from_this()),interest,*match);
     }
     return;
   }
@@ -450,24 +494,6 @@ Forwarder::onOutgoingData(const Data& data, Face& outFace)
   ++m_counters.getNOutDatas();
 }
 
-//OON
-void
-Forwarder::onProcessingData(const Data& data, Face& outFace)
-{   //todo
-    //volatile size_t i = 1;
-    //size_t size = data.getContent().value_size();
-    //for (i = 1; i < size; i++); //to do data processing
-    //onOutgoingData(data,outFace);
-    if (outFace.getId() == INVALID_FACEID) {
-      NFD_LOG_WARN("onOutgoingData face=invalid data=" << data.getName());
-      return;
-      //drop
-    }
-    NFD_LOG_DEBUG("onOutgoingData face=" << outFace.getId() << " data=" << data.getName());
-    outFace.sendData(data);
-    ++m_counters.getNOutDatas();
-    return;
-  }
 
 static inline bool
 compare_InRecord_expiry(const pit::InRecord& a, const pit::InRecord& b)

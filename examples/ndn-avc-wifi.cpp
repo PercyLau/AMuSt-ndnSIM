@@ -179,9 +179,9 @@ main(int argc, char* argv[])
 
   Simulator::Stop(Seconds(4000));
   ndn::DASHPlayerTracer::InstallAll("dash-output-ndn.txt");
-  //ndn::L3RateTracer::InstallAll("rate-trace-oon.txt", Seconds(0.5));
-  //L2RateTracer("L2-output-oon.txt",Seconds(0.5));
- // ndn::AppDelayTracer::InstallAll("app-delays-trace.txt");
+  ndn::L3RateTracer::InstallAll("rate-trace-ndn.txt", Seconds(0.5));
+  L2RateTracer::InstallAll("L2-output-oon.txt",Seconds(0.5));
+  ndn::AppDelayTracer::InstallAll("app-delays-trace-ndn.txt");
   //ndn::FileConsumerLogTracer::InstallAll("file-consumer-log-trace.txt");
 
   Simulator::Run();

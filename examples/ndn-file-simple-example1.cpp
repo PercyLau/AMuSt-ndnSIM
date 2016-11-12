@@ -77,11 +77,11 @@ main(int argc, char* argv[])
   ndnHelper.InstallAll();
 
   // Choosing forwarding strategy
-  ndn::StrategyChoiceHelper::InstallAll("/myprefix", "/localhost/nfd/strategy/best-route");
+  ndn::StrategyChoiceHelper::InstallAll("/myprefix", "/localhost/nfd/strategy/oon");
 
   // Consumer
   ndn::AppHelper consumerHelper("ns3::ndn::FileConsumer");
-  consumerHelper.SetAttribute("FileToRequest", StringValue("/myprefix/bunny_2s1.m4s"));
+  consumerHelper.SetAttribute("FileToRequest", StringValue("/home/lockheed/multimediaData/AVC/BBB/sintel_trailer_540p_07500k.mkv"));
 
   consumerHelper.Install(nodes.Get(0)); // install to some node from nodelist
 
@@ -96,14 +96,14 @@ main(int argc, char* argv[])
   ndn::AppHelper producerHelper("ns3::ndn::FileServer");
 
   // Producer will reply to all requests starting with /prefix
-  producerHelper.SetPrefix("/myprefix");
-  producerHelper.SetAttribute("ContentDirectory", StringValue("/home/percy/multimediaData/AVC/BBB/bunny_2s_8000kbit"));
+  producerHelper.SetPrefix("/home/lockheed/multimediaData/AVC/BBB");
+  producerHelper.SetAttribute("ContentDirectory", StringValue("/home/lockheed/multimediaData/AVC/BBB/"));
   producerHelper.Install(nodes.Get(2)); // install to some node from nodelist
 
   ndn::GlobalRoutingHelper ndnGlobalRoutingHelper;
   ndnGlobalRoutingHelper.InstallAll();
 
-  ndnGlobalRoutingHelper.AddOrigins("/myprefix", nodes.Get(2));
+  ndnGlobalRoutingHelper.AddOrigins("/home/lockheed/multimediaData/AVC/BBB", nodes.Get(2));
   ndn::GlobalRoutingHelper::CalculateRoutes();
 
   Simulator::Stop(Seconds(600.0));
