@@ -30,6 +30,7 @@
 #include "face/null-face.hpp"
 
 #include "utils/ndn-ns3-packet-tag.hpp"
+#include <iostream>
 
 #include <boost/random/uniform_int_distribution.hpp>
 
@@ -168,6 +169,7 @@ Forwarder::onContentStoreMiss(const Face& inFace,
                 bind(&Forwarder::onProcessingData, this, ref(inFace), _1, _2),
                 bind(&Forwarder::onObjectProcessorMiss, this, ref(inFace), pitEntry, _1));
     }
+    return;
 }
 
 
@@ -186,6 +188,11 @@ Forwarder::onContentStoreHit(const Face& inFace,
   const_pointer_cast<Data>(data.shared_from_this())->setIncomingFaceId(FACEID_CONTENT_STORE);
   // XXX should we lookup PIT for other Interests that also match csMatch?
 
+  //OON 20161209
+  //std::cout<<data.getContent().value()<<'\t';
+  //Name t_name = interest.getName();
+  //Data temp_data(data.getContent());
+  //temp_data.setSignature(data.getSignature());
   // set PIT straggler timer
   this->setStragglerTimer(pitEntry, true, data.getFreshnessPeriod());
 
@@ -201,6 +208,7 @@ Forwarder::onProcessingData(const Face& inFace, const Interest& interest, const 
     //size_t size = data.getContent().value_size();
     //for (i = 1; i < size; i++); //to do data processing
     //onOutgoingData(data,outFace);
+    //std::cout<<data.getContent().value_size()<<"\t'";
      const_pointer_cast<Data>(data.shared_from_this())->setIncomingFaceId(FACEID_OBJECT_PROCESSOR);
     if (inFace.getId() == INVALID_FACEID) {
       NFD_LOG_WARN("onOutgoingData face=invalid data=" << data.getName());

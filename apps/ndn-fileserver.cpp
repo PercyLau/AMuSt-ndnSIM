@@ -225,14 +225,14 @@ FileServer::ReturnManifestData(shared_ptr<const Interest> interest, std::string&
   // to create real wire encoding
   data->wireEncode();
 
-  m_transmittedDatas(data, this, m_face);
+  m_transmittedDatas(data, this, m_face);///TracedCallback<shared_ptr<const Data>, Ptr<App>, shared_ptr<Face>> m_transmittedDFatas ///< @brief App-level trace of transmitted Data
   m_face->onReceiveData(*data);
 }
 
 
 
 
-
+// OON
 void
 FileServer::ReturnPayloadData(shared_ptr<const Interest> interest, std::string& fname, uint32_t seqNo)
 {
@@ -246,6 +246,7 @@ FileServer::ReturnPayloadData(shared_ptr<const Interest> interest, std::string& 
 
   auto buffer = make_shared< ::ndn::Buffer>(m_maxPayloadSize);
   //size_t actualSize = fread(buffer->get(), sizeof(uint8_t), m_maxPayloadSize, fp);
+  // this is make new content
   fread(buffer->get(), sizeof(uint8_t), m_maxPayloadSize, fp);
   fclose(fp);
 
@@ -273,11 +274,6 @@ FileServer::ReturnPayloadData(shared_ptr<const Interest> interest, std::string& 
   m_transmittedDatas(data, this, m_face);
   m_face->onReceiveData(*data);
 }
-
-
-
-
-
 
 size_t
 FileServer::EstimateOverhead(std::string& fname)

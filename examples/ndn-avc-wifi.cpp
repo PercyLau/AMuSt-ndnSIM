@@ -137,7 +137,7 @@ main(int argc, char* argv[])
   consumerHelper.SetAttribute("StartUpDelay", StringValue("0.5"));
   
   consumerHelper.SetAttribute("AdaptationLogic", StringValue("dash::player::RateBasedAdaptationLogic"));
-  consumerHelper.SetAttribute("MpdFileToRequest", StringValue(std::string("/home/lockheed/multimediaData/AVC/BBB-2s-v1.mpd" )));
+  consumerHelper.SetAttribute("MpdFileToRequest", StringValue(std::string("/home/percy/multimediaData/AVC/BBB-2s-v1.mpd" )));
 
   ApplicationContainer consumer_0 = consumerHelper.Install(nodes.Get(0));
   consumer_0.Start(Seconds(0.5));
@@ -158,14 +158,14 @@ main(int argc, char* argv[])
 
   // 5. Set up server devices
   ndn::AppHelper mpdProducerHelper("ns3::ndn::FileServer");
-  mpdProducerHelper.SetPrefix("/home/lockheed/multimediaData/AVC/");
-  mpdProducerHelper.SetAttribute("ContentDirectory", StringValue("/home/lockheed/multimediaData/AVC/"));
+  mpdProducerHelper.SetPrefix("/home/percy/multimediaData/AVC/");
+  mpdProducerHelper.SetAttribute("ContentDirectory", StringValue("/home/percy/multimediaData/AVC/"));
   mpdProducerHelper.Install(nodes.Get(3));
 
   // 6. Set global routing?
   ndn::GlobalRoutingHelper ndnGlobalRoutingHelper;
   ndnGlobalRoutingHelper.InstallAll();
-  ndnGlobalRoutingHelper.AddOrigins("/home/lockheed/multimediaData/",nodes.Get(3));
+  ndnGlobalRoutingHelper.AddOrigins("/home/percy/multimediaData/",nodes.Get(3));
   ndn::GlobalRoutingHelper::CalculateAllPossibleRoutes();
 
   //producerHelper.Install(nodes.Get(6));

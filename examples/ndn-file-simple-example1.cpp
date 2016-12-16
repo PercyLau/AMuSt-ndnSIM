@@ -81,7 +81,7 @@ main(int argc, char* argv[])
 
   // Consumer
   ndn::AppHelper consumerHelper("ns3::ndn::FileConsumer");
-  consumerHelper.SetAttribute("FileToRequest", StringValue("/home/lockheed/multimediaData/AVC/BBB/sintel_trailer_540p_07500k.mkv"));
+  consumerHelper.SetAttribute("FileToRequest", StringValue("/home/percy/somedata"));
 
   consumerHelper.Install(nodes.Get(0)); // install to some node from nodelist
 
@@ -97,13 +97,13 @@ main(int argc, char* argv[])
 
   // Producer will reply to all requests starting with /prefix
   producerHelper.SetPrefix("/home/lockheed/multimediaData/AVC/BBB");
-  producerHelper.SetAttribute("ContentDirectory", StringValue("/home/lockheed/multimediaData/AVC/BBB/"));
+  producerHelper.SetAttribute("ContentDirectory", StringValue("/home/percy/somedata"));
   producerHelper.Install(nodes.Get(2)); // install to some node from nodelist
 
   ndn::GlobalRoutingHelper ndnGlobalRoutingHelper;
   ndnGlobalRoutingHelper.InstallAll();
 
-  ndnGlobalRoutingHelper.AddOrigins("/home/lockheed/multimediaData/AVC/BBB", nodes.Get(2));
+  ndnGlobalRoutingHelper.AddOrigins("/home/percy/somedata", nodes.Get(2));
   ndn::GlobalRoutingHelper::CalculateRoutes();
 
   Simulator::Stop(Seconds(600.0));

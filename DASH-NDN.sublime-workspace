@@ -4,6 +4,50 @@
 		"selected_items":
 		[
 			[
+				"sub",
+				"sub_name"
+			],
+			[
+				"name",
+				"name_map"
+			],
+			[
+				"File",
+				"FileServer"
+			],
+			[
+				"shared",
+				"shared_ptr"
+			],
+			[
+				"op",
+				"m_opFromNdnSim"
+			],
+			[
+				"send",
+				"sendInterest"
+			],
+			[
+				"Contn",
+				"ContentStore"
+			],
+			[
+				"shar",
+				"shared_from_this"
+			],
+			[
+				"m_op",
+				"m_opFromNdnSim"
+			],
+			[
+				"shart",
+				"shared_ptr"
+			],
+			[
+				"it",
+				"it_op"
+			],
+			[
 				"set",
 				"setOpMIPS"
 			],
@@ -12,12 +56,24 @@
 				"ndnHelper"
 			],
 			[
-				"size",
-				"size_t"
+				"m_",
+				"m_maxMIPS"
 			],
 			[
 				"Set",
-				"SetType"
+				"SetTypeId"
+			],
+			[
+				"in",
+				"interest"
+			],
+			[
+				"can",
+				"canForwardTo"
+			],
+			[
+				"Face",
+				"FaceId"
 			],
 			[
 				"wif",
@@ -30,10 +86,6 @@
 			[
 				"make",
 				"makeNullFace"
-			],
-			[
-				"Face",
-				"FaceUri"
 			],
 			[
 				"FACE",
@@ -64,88 +116,31 @@
 	"buffers":
 	[
 		{
-			"file": "examples/ndn-avc-wifi.cpp",
-			"settings":
-			{
-				"buffer_size": 8364,
-				"encoding": "UTF-8",
-				"line_ending": "Unix"
-			}
-		},
-		{
-			"contents": "/* -*- Mode:C++; c-file-style:\"gnu\"; indent-tabs-mode:nil; -*- */\n/**\n * Copyright (c) 2015 Christian Kreuzberger and Daniel Posch, Alpen-Adria-University \n * Klagenfurt\n *\n * This file is part of amus-ndnSIM, based on ndnSIM. See AUTHORS for complete list of \n * authors and contributors.\n *\n * amus-ndnSIM and ndnSIM are free software: you can redistribute it and/or modify it \n * under the terms of the GNU General Public License as published by the Free Software \n * Foundation, either version 3 of the License, or (at your option) any later version.\n *\n * amus-ndnSIM is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;\n * without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR\n * PURPOSE.  See the GNU General Public License for more details.\n *\n * You should have received a copy of the GNU General Public License along with\n * amus-ndnSIM, e.g., in COPYING.md file.  If not, see <http://www.gnu.org/licenses/>.\n **/\n\n#include \"ns3/core-module.h\"\n#include \"ns3/network-module.h\"\n#include \"ns3/point-to-point-module.h\"\n#include \"ns3/ndnSIM-module.h\"\n#include \"ns3/ndnSIM/apps/ndn-app.hpp\"\n\nnamespace ns3 {\n\nint\nmain(int argc, char* argv[])\n{\n  // setting default parameters for PointToPoint links and channels\n  Config::SetDefault(\"ns3::PointToPointNetDevice::DataRate\", StringValue(\"10Mbps\"));\n  Config::SetDefault(\"ns3::PointToPointChannel::Delay\", StringValue(\"10ms\"));\n  Config::SetDefault(\"ns3::DropTailQueue::MaxPackets\", StringValue(\"20\"));\n\n  // Read optional command-line parameters (e.g., enable visualizer with ./waf --run=<> --visualize\n  CommandLine cmd;\n  cmd.Parse(argc, argv);\n\n  // Creating nodes\n  NodeContainer nodes;\n  nodes.Create(3); // 3 nodes, connected: 0 <---> 1 <---> 2\n\n  // Connecting nodes using two links\n  PointToPointHelper p2p;\n  p2p.Install(nodes.Get(0), nodes.Get(1));\n  p2p.Install(nodes.Get(1), nodes.Get(2));\n\n  // Install NDN stack on all nodes\n  ndn::StackHelper ndnHelper;\n  ndnHelper.SetDefaultRoutes(true);\n  ndnHelper.setCsSize(0);\n  ndnHelper.SetOldContentStore(\"ns3::ndn::cs::Lru\", \"MaxSize\", \"100\");\n  ndnHelper.InstallAll();\n\n  // Choosing forwarding strategy\n  ndn::StrategyChoiceHelper::InstallAll(\"/myprefix\", \"/localhost/nfd/strategy/best-route\");\n\n  // Installing multimedia consumer\n  ns3::ndn::AppHelper consumerHelper(\"ns3::ndn::FileConsumerCbr::MultimediaConsumer\");\n  consumerHelper.SetAttribute(\"AllowUpscale\", BooleanValue(true));\n  consumerHelper.SetAttribute(\"AllowDownscale\", BooleanValue(false));\n  consumerHelper.SetAttribute(\"ScreenWidth\", UintegerValue(1920));\n  consumerHelper.SetAttribute(\"ScreenHeight\", UintegerValue(1080));\n  consumerHelper.SetAttribute(\"StartRepresentationId\", StringValue(\"auto\"));\n  consumerHelper.SetAttribute(\"MaxBufferedSeconds\", UintegerValue(30));\n  consumerHelper.SetAttribute(\"StartUpDelay\", StringValue(\"0.1\"));\n\n  consumerHelper.SetAttribute(\"AdaptationLogic\", StringValue(\"dash::player::SVCBufferBasedAdaptationLogic\"));\n  consumerHelper.SetAttribute(\"MpdFileToRequest\", StringValue(std::string(\"/myprefix/SVC/BBB-III.mpd\" )));\n\n  ApplicationContainer app1 = consumerHelper.Install (nodes.Get(2));\n\n   // Producer\n  ndn::AppHelper producerHelper(\"ns3::ndn::FileServer\");\n\n  // Producer will reply to all requests starting with /myprefix\n  producerHelper.SetPrefix(\"/myprefix\");\n  producerHelper.SetAttribute(\"ContentDirectory\", StringValue(\"/home/someuser/multimediaData\"));\n  producerHelper.Install(nodes.Get(0)); // install to some node from nodelist\n\n  ndn::GlobalRoutingHelper ndnGlobalRoutingHelper;\n  ndnGlobalRoutingHelper.InstallAll();\n\n  ndnGlobalRoutingHelper.AddOrigins(\"/myprefix\", nodes.Get(0));\n  ndn::GlobalRoutingHelper::CalculateRoutes();\n\n  Simulator::Stop(Seconds(1200.0));\n\n  ndn::DASHPlayerTracer::InstallAll(\"dash-output-svc.txt\");\n  ndn::CsTracer::InstallAll(\"cs-trace-svc.txt\", Seconds(1));\n\n  Simulator::Run();\n  Simulator::Destroy();\n\n  NS_LOG_UNCOND(\"Simulation Finished.\");\n\n  return 0;\n}\n\n} // namespace ns3\n\nint\nmain(int argc, char* argv[])\n{\n  return ns3::main(argc, argv);\n}\n\n\n",
-			"file": "examples/ndn-multimedia-simple-svc-example2-tracers.cpp",
-			"file_size": 4061,
-			"file_write_time": 131218557930608525,
-			"settings":
-			{
-				"buffer_size": 4069,
-				"line_ending": "Unix"
-			}
-		},
-		{
-			"file": "examples/oon-multimedia-brite-example1.cpp",
-			"settings":
-			{
-				"buffer_size": 7163,
-				"encoding": "UTF-8",
-				"line_ending": "Unix"
-			}
-		},
-		{
-			"contents": "#include \"ns3/core-module.h\"\n#include \"ns3/network-module.h\"\n#include \"ns3/applications-module.h\"\n#include \"ns3/wifi-module.h\"\n#include \"ns3/mobility-module.h\"\n#include \"ns3/internet-module.h\"\n#include \"ns3/ndnSIM/apps/ndn-app.hpp\"\n#include \"ns3/ndnSIM-module.h\"\n\nusing namespace std;\nnamespace ns3 {\n\n\nNS_LOG_COMPONENT_DEFINE(\"ndn.AVC.WiFiExample\");\n\nvoid\nFileDownloadedTrace(Ptr<ns3::ndn::App> app, shared_ptr<const ndn::Name> interestName, double downloadSpeed, long milliSeconds)\n{\n  std::cout << \"Trace: File finished downloading: \" << Simulator::Now().GetMilliSeconds () << \" \"<< *interestName <<\n     \" Download Speed: \" << downloadSpeed/1000.0 << \" Kilobit/s in \" << milliSeconds << \" ms\" << std::endl;\n}\n\nvoid\nFileDownloadedManifestTrace(Ptr<ns3::ndn::App> app, shared_ptr<const ndn::Name> interestName, long fileSize)\n{\n  std::cout << \"Trace: Manifest received: \" << Simulator::Now().GetMilliSeconds () <<\" \"<< *interestName << \" File Size: \" << fileSize << std::endl;\n}\n\nvoid\nFileDownloadStartedTrace(Ptr<ns3::ndn::App> app, shared_ptr<const ndn::Name> interestName)\n{\n  std::cout << \"Trace: File started downloading: \" << Simulator::Now().GetMilliSeconds () <<\" \"<< *interestName << std::endl;\n}\n\nint\nmain(int argc, char* argv[])\n{\n  // disable fragmentation\n  Config::SetDefault(\"ns3::WifiRemoteStationManager::FragmentationThreshold\", StringValue(\"2200\"));\n  Config::SetDefault(\"ns3::WifiRemoteStationManager::RtsCtsThreshold\", StringValue(\"2200\"));\n  Config::SetDefault(\"ns3::WifiRemoteStationManager::NonUnicastMode\",\n                     StringValue(\"OfdmRate24Mbps\"));\n\n  CommandLine cmd;\n  cmd.Parse(argc, argv);\n\n  //////////////////////\n  //////////////////////\n  //////////////////////\n  WifiHelper wifi = WifiHelper::Default();\n  wifi.SetRemoteStationManager (\"ns3::AarfWifiManager\");\n  wifi.SetStandard(WIFI_PHY_STANDARD_80211a);\n  //wifi.SetRemoteStationManager(\"ns3::ConstantRateWifiManager\", \"DataMode\", StringValue(\"OfdmRate24Mbps\"));\n\n  YansWifiChannelHelper wifiChannel; // = YansWifiChannelHelper::Default ();\n  wifiChannel.SetPropagationDelay(\"ns3::ConstantSpeedPropagationDelayModel\");\n  wifiChannel.AddPropagationLoss(\"ns3::ThreeLogDistancePropagationLossModel\");\n  wifiChannel.AddPropagationLoss(\"ns3::NakagamiPropagationLossModel\");\n\n  // YansWifiPhy wifiPhy = YansWifiPhy::Default();\n  YansWifiPhyHelper wifiPhyHelper = YansWifiPhyHelper::Default();\n  wifiPhyHelper.SetChannel(wifiChannel.Create());\n  wifiPhyHelper.Set(\"TxPowerStart\", DoubleValue(2)); //power start and end must be the same\n  wifiPhyHelper.Set(\"TxPowerEnd\", DoubleValue(2));\n\n  NqosWifiMacHelper wifiMacHelper = NqosWifiMacHelper::Default();\n  wifiMacHelper.SetType(\"ns3::AdhocWifiMac\");\n\n  Ptr<UniformRandomVariable> randomizer = CreateObject<UniformRandomVariable>();\n  randomizer->SetAttribute(\"Min\", DoubleValue(1)); // \n  randomizer->SetAttribute(\"Max\", DoubleValue(10));\n\n  MobilityHelper mobility;\n  mobility.SetPositionAllocator(\"ns3::RandomBoxPositionAllocator\", \"X\", PointerValue(randomizer),\n                                \"Y\", PointerValue(randomizer), \"Z\", PointerValue(randomizer));\n  //mobility.SetMobilityModel(\"ns3::ConstantPositionMobilityModel\");\n  //mobility.SetPositionAllocator (\"ns3::GridPositionAllocator\",\n  //                               \"MinX\", DoubleValue (0.0),\n  //                               \"MinY\", DoubleValue (50.0),\n  //                               \"DeltaX\", DoubleValue (10.0),\n  //                               \"DeltaY\", DoubleValue (10.0),\n  //                               \"GridWidth\", UintegerValue (10),\n  //                              \"LayoutType\", StringValue (\"RowFirst\"));\n\n\n  mobility.SetMobilityModel(\"ns3::RandomWalk2dMobilityModel\", \"Bounds\", RectangleValue (Rectangle(0,100,0,100)),\"Distance\",DoubleValue(4),\"Speed\",PointerValue(randomizer));\n\n  NodeContainer nodes;\n  nodes.Create(4);\n\n  ////////////////\n  // 1. Install Wifi\n  NetDeviceContainer wifiNetDevices = wifi.Install(wifiPhyHelper, wifiMacHelper, nodes);\n\n  // 2. Install Mobility model\n  mobility.Install(nodes);\n\n  // 3. Install NDN stack\n  NS_LOG_INFO(\"Installing NDN stack\");\n  ndn::StackHelper ndnHelper;\n  // ndnHelper.AddNetDeviceFaceCreateCallback (WifiNetDevice::GetTypeId (), MakeCallback\n  // (MyNetDeviceFaceCallback));\n  //ndnHelper.SetOldContentStore(\"ns3::ndn::cs::Lru\", \"MaxSize\", \"1\");\n  ndnHelper.setCsSize(10);\n  ndnHelper.setOpMIPS(1);\n  ndnHelper.SetDefaultRoutes(true);\n  \n  ndnHelper.Install(nodes.Get(1));\n  ndnHelper.Install(nodes.Get(2));\n  \n\n  //ndnHelper.SetOldContentStore(\"ns3::ndn::cs::Lru\", \"MaxSize\", \"1\");\n  //ndnHelper.setCsSize(100);\n  //ndnHelper.setOpMIPS(10000000);\n  //ndnHelper.Install(nodes.Get(3));\n  //ndnHelper.Install(nodes.Get(4));\n  //ndnHelper.Install(nodes.Get(5));\n  //ndnHelper.Install(nodes.Get(6));\n  //ndnHelper.Install(nodes.Get(7));\n  \n  ndnHelper.setCsSize(10);\n  ndnHelper.SetDefaultRoutes(true);\n  ndnHelper.setOpMIPS(1000);\n  ndnHelper.Install(nodes.Get(0));\n  \n  ndnHelper.setOpMIPS(1);\n  ndnHelper.Install(nodes.Get(3));\n  // Set routing strategy\n  ndn::StrategyChoiceHelper::Install(nodes, \"/\", \"ndn:/localhost/nfd/strategy/oon\");\n\n  // 4. Set up client devices\n  NS_LOG_INFO(\"Installing Applications\");\n\n  //set up mobile video consumer\n  ns3::ndn::AppHelper consumerHelper(\"ns3::ndn::FileConsumerCbr::MultimediaConsumer\");\n  consumerHelper.SetAttribute(\"AllowUpscale\", BooleanValue(true));\n  consumerHelper.SetAttribute(\"AllowDownscale\", BooleanValue(true));\n  consumerHelper.SetAttribute(\"ScreenWidth\", UintegerValue(1920));\n  consumerHelper.SetAttribute(\"ScreenHeight\", UintegerValue(1080));\n  consumerHelper.SetAttribute(\"StartRepresentationId\", StringValue(\"auto\"));\n  consumerHelper.SetAttribute(\"MaxBufferedSeconds\", UintegerValue(10));\n  consumerHelper.SetAttribute(\"StartUpDelay\", StringValue(\"0.5\"));\n  \n  consumerHelper.SetAttribute(\"AdaptationLogic\", StringValue(\"dash::player::RateBasedAdaptationLogic\"));\n  consumerHelper.SetAttribute(\"MpdFileToRequest\", StringValue(std::string(\"/home/lockheed/multimediaData/AVC/BBB-2s.mpd\" )));\n\n  ApplicationContainer consumer_0 = consumerHelper.Install(nodes.Get(0));\n  consumer_0.Start(Seconds(0.5)); //precache\n  consumerHelper.SetAttribute(\"MpdFileToRequest\", StringValue(std::string(\"/home/lockheed/multimediaData/AVC/BBB-2s-v1.mpd\" )));\n  ApplicationContainer consumer_1 = consumerHelper.Install(nodes.Get(1));\n  consumer_1.Start(Seconds(1000));\n  ApplicationContainer consumer_2 = consumerHelper.Install(nodes.Get(2));\n  consumer_2.Start(Seconds(1000));\n  //consumerHelper.Install(nodes.Get(3));\n  //consumerHelper.Install(nodes.Get(4));\n\n      // Connect Tracers\n  Config::ConnectWithoutContext(\"/NodeList/*/ApplicationList/*/FileDownloadFinished\",\n                               MakeCallback(&FileDownloadedTrace));\n  Config::ConnectWithoutContext(\"/NodeList/*/ApplicationList/*/ManifestReceived\",\n                               MakeCallback(&FileDownloadedManifestTrace));\n  Config::ConnectWithoutContext(\"/NodeList/*/ApplicationList/*/FileDownloadStarted\",\n                               MakeCallback(&FileDownloadStartedTrace));\n\n  // 5. Set up server devices\n  ndn::AppHelper mpdProducerHelper(\"ns3::ndn::FileServer\");\n  mpdProducerHelper.SetPrefix(\"/home/lockheed/multimediaData/AVC/\");\n  mpdProducerHelper.SetAttribute(\"ContentDirectory\", StringValue(\"/home/lockheed/multimediaData/AVC/\"));\n  mpdProducerHelper.Install(nodes.Get(3));\n  //mpdProducerHelper.Install(nodes.Get(0));\n  // 6. Set global routing?\n  ndn::GlobalRoutingHelper ndnGlobalRoutingHelper;\n  ndnGlobalRoutingHelper.InstallAll();\n  ndnGlobalRoutingHelper.AddOrigins(\"/home/lockheed/multimediaData/\",nodes.Get(3));\n  //ndnGlobalRoutingHelper.AddOrigins(\"/home/lockheed/multimediaData/\",nodes.Get(0));\n  ndn::GlobalRoutingHelper::CalculateAllPossibleRoutes();\n\n  //producerHelper.Install(nodes.Get(6));\n  //producerHelper.SetPrefix(\"/node1/prefix\");\n  //producerHelper.SetAttribute(\"PayloadSize\", StringValue(\"1500\"));\n  //producerHelper.Install(nodes.Get(7));\n  //producerHelper.SetPrefix(\"/\");\n  //producerHelper.SetAttribute(\"PayloadSize\", StringValue(\"1500\"));\n  //producerHelper.Install(nodes.Get(8));\n  ////////////////\n\n  Simulator::Stop(Seconds(4000));\n  ndn::DASHPlayerTracer::InstallAll(\"dash-output-oon.txt\");\n  //ndn::L3RateTracer::InstallAll(\"rate-trace-oon.txt\", Seconds(0.5));\n  //L2RateTracer(\"L2-output-oon.txt\",Seconds(0.5));\n // ndn::AppDelayTracer::InstallAll(\"app-delays-trace.txt\");\n  //ndn::FileConsumerLogTracer::InstallAll(\"file-consumer-log-trace.txt\");\n\n  Simulator::Run();\n  Simulator::Destroy();\n\n  NS_LOG_UNCOND(\"Simulation Finished.\");\n  return 0;\n}\n\n} // namespace ns3\n\nint\nmain(int argc, char* argv[])\n{\n  return ns3::main(argc, argv);\n}",
-			"file": "examples/oon-avc-wifi.cpp",
-			"file_size": 8683,
-			"file_write_time": 131225421303360341,
-			"settings":
-			{
-				"buffer_size": 8694,
-				"line_ending": "Unix"
-			}
-		},
-		{
+			"contents": "/* -*- Mode:C++; c-file-style:\"gnu\"; indent-tabs-mode:nil; -*- */\n/**\n * Copyright (c) 2014-2015,  Regents of the University of California,\n *                           Arizona Board of Regents,\n *                           Colorado State University,\n *                           University Pierre & Marie Curie, Sorbonne University,\n *                           Washington University in St. Louis,\n *                           Beijing Institute of Technology,\n *                           The University of Memphis.\n *\n * This file is part of NFD (Named Data Networking Forwarding Daemon).\n * See AUTHORS.md for complete list of NFD authors and contributors.\n *\n * NFD is free software: you can redistribute it and/or modify it under the terms\n * of the GNU General Public License as published by the Free Software Foundation,\n * either version 3 of the License, or (at your option) any later version.\n *\n * NFD is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;\n * without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR\n * PURPOSE.  See the GNU General Public License for more details.\n *\n * You should have received a copy of the GNU General Public License along with\n * NFD, e.g., in COPYING.md file.  If not, see <http://www.gnu.org/licenses/>.\n */\n\n#include \"forwarder.hpp\"\n#include \"core/logger.hpp\"\n#include \"core/random.hpp\"\n#include \"strategy.hpp\"\n#include \"face/null-face.hpp\"\n\n#include \"utils/ndn-ns3-packet-tag.hpp\"\n#include <iostream>\n\n#include <boost/random/uniform_int_distribution.hpp>\n\nnamespace nfd {\n\nNFD_LOG_INIT(\"Forwarder\");\n\nusing fw::Strategy;\n\nconst Name Forwarder::LOCALHOST_NAME(\"ndn:/localhost\");\n\nForwarder::Forwarder()\n  : m_faceTable(*this)\n  , m_fib(m_nameTree)\n  , m_pit(m_nameTree)\n  , m_measurements(m_nameTree)\n  , m_strategyChoice(m_nameTree, fw::makeDefaultStrategy(*this))\n  , m_csFace(make_shared<NullFace>(FaceUri(\"contentstore://\")))\n  ,m_opFace(make_shared<NullFace>(FaceUri(\"objectprocessor://\")))\n{\n  fw::installStrategies(*this);\n  getFaceTable().addReserved(m_csFace, FACEID_CONTENT_STORE);\n  getFaceTable().addReserved(m_opFace,FACEID_OBJECT_PROCESSOR);\n}\n\nForwarder::~Forwarder()\n{\n\n}\n\nvoid\nForwarder::onIncomingInterest(Face& inFace, const Interest& interest)\n{\n  // receive Interest\n  NFD_LOG_DEBUG(\"onIncomingInterest face=\" << inFace.getId() <<\n                \" interest=\" << interest.getName());\n  const_cast<Interest&>(interest).setIncomingFaceId(inFace.getId());\n  ++m_counters.getNInInterests();\n\n  // /localhost scope control\n  bool isViolatingLocalhost = !inFace.isLocal() &&\n                              LOCALHOST_NAME.isPrefixOf(interest.getName());\n  if (isViolatingLocalhost) {\n    NFD_LOG_DEBUG(\"onIncomingInterest face=\" << inFace.getId() <<\n                  \" interest=\" << interest.getName() << \" violates /localhost\");\n    // (drop)\n    return;\n  }\n\n  // PIT insert\n  shared_ptr<pit::Entry> pitEntry = m_pit.insert(interest).first;\n\n  // detect duplicate Nonce\n  int dnw = pitEntry->findNonce(interest.getNonce(), inFace);\n  bool hasDuplicateNonce = (dnw != pit::DUPLICATE_NONCE_NONE) ||\n                           m_deadNonceList.has(interest.getName(), interest.getNonce());\n  if (hasDuplicateNonce) {\n    // goto Interest loop pipeline\n    this->onInterestLoop(inFace, interest, pitEntry);\n    return;\n  }\n\n  // cancel unsatisfy & straggler timer\n  this->cancelUnsatisfyAndStragglerTimer(pitEntry);\n\n  // is pending?\n  const pit::InRecordCollection& inRecords = pitEntry->getInRecords();\n  bool isPending = inRecords.begin() != inRecords.end();\n  if (!isPending) {\n    if (m_csFromNdnSim == nullptr) {\n      /*Cs::find(const Interest& interest,\n         const HitCallback& hitCallback,\n         const MissCallback& missCallback) const*/\n      /*\n        Forwarder::onContentStoreHit(const Face& inFace,\n                             shared_ptr<pit::Entry> pitEntry,\n                             const Interest& interest,\n                             const Data& data)\n\n        void\n        Forwarder::onContentStoreMiss(const Face& inFace,\n                              shared_ptr<pit::Entry> pitEntry,\n                              const Interest& interest)\n        onProcessingData(const Face& inFace, const Interest& interest, const Data& data);\n      */\n\n      m_cs.find(interest,\n                bind(&Forwarder::onContentStoreHit, this, ref(inFace), pitEntry, _1, _2),\n                bind(&Forwarder::onContentStoreMiss, this, ref(inFace), pitEntry, _1));\n      //OON\n    }\n    else {\n      shared_ptr<Data> match = m_csFromNdnSim->Lookup(interest.shared_from_this());\n      if (match != nullptr) {\n        this->onContentStoreHit(inFace, pitEntry, interest, *match);\n      }\n      else {\n        this->onObjectProcessorMiss(inFace, pitEntry, interest);\n      }\n    }\n  }\n  else {\n    this->onObjectProcessorMiss(inFace, pitEntry, interest);\n  }\n}\n\nvoid\nForwarder::onObjectProcessorMiss(const Face& inFace,\n                              shared_ptr<pit::Entry> pitEntry,\n                              const Interest& interest)\n{\n  NFD_LOG_DEBUG(\"onContentStoreMiss interest=\" << interest.getName());\n\n  shared_ptr<Face> face = const_pointer_cast<Face>(inFace.shared_from_this());\n  // insert InRecord\n  pitEntry->insertOrUpdateInRecord(face, interest);\n\n  // set PIT unsatisfy timer\n  this->setUnsatisfyTimer(pitEntry);\n\n  // FIB lookup\n  shared_ptr<fib::Entry> fibEntry = m_fib.findLongestPrefixMatch(*pitEntry);\n\n  // dispatch to strategy\n  this->dispatchToStrategy(pitEntry, bind(&Strategy::afterReceiveInterest, _1,\n                                          cref(inFace), cref(interest), fibEntry, pitEntry));\n}\n\nvoid\nForwarder::onContentStoreMiss(const Face& inFace,\n                              shared_ptr<pit::Entry> pitEntry,\n                              const Interest& interest)\n{\n    if (m_opFromNdnSim == nullptr) {\n      m_op.find(interest,\n                bind(&Forwarder::onProcessingData, this, ref(inFace), _1, _2),\n                bind(&Forwarder::onObjectProcessorMiss, this, ref(inFace), pitEntry, _1));\n    }\n    return;\n}\n\n\nvoid\nForwarder::onContentStoreHit(const Face& inFace,\n                             shared_ptr<pit::Entry> pitEntry,\n                             const Interest& interest,\n                             const Data& data)\n{\n  NFD_LOG_DEBUG(\"onContentStoreHit interest=\" << interest.getName());\n\n  beforeSatisfyInterest(*pitEntry, *m_csFace, data);\n  this->dispatchToStrategy(pitEntry, bind(&Strategy::beforeSatisfyInterest, _1,\n                                          pitEntry, cref(*m_csFace), cref(data)));\n\n  const_pointer_cast<Data>(data.shared_from_this())->setIncomingFaceId(FACEID_CONTENT_STORE);\n  // XXX should we lookup PIT for other Interests that also match csMatch?\n\n  //OON 20161209\n  //std::cout<<data.getContent().value()<<'\\t';\n  //quiName t_name = interest.getName();\n  //Data temp_data(data.getContent());\n  //temp_data.setSignature(data.getSignature());\n  // set PIT straggler timer\n  this->setStragglerTimer(pitEntry, true, data.getFreshnessPeriod());\n\n  // goto outgoing Data pipeline\n  this->onOutgoingData(data, *const_pointer_cast<Face>(inFace.shared_from_this()));\n}\n\n//OON\nvoid\nForwarder::onProcessingData(const Face& inFace, const Interest& interest, const Data& data)\n{   //todo\n    //volatile size_t i = 1;\n    //size_t size = data.getContent().value_size();\n    //for (i = 1; i < size; i++); //to do data processing\n    //onOutgoingData(data,outFace);\n    //std::cout<<data.getContent().value_size()<<\"\\t'\";\n     const_pointer_cast<Data>(data.shared_from_this())->setIncomingFaceId(FACEID_OBJECT_PROCESSOR);\n    if (inFace.getId() == INVALID_FACEID) {\n      NFD_LOG_WARN(\"onOutgoingData face=invalid data=\" << data.getName());\n      return;\n      //drop\n    }\n    NFD_LOG_DEBUG(\"onOutgoingData face=\" << inFace.getId() << \" data=\" << data.getName());\n    const_pointer_cast<Face>(inFace.shared_from_this())->sendData(data);\n    ++m_counters.getNOutDatas();\n    return;\n  }\n\n\nvoid\nForwarder::onInterestLoop(Face& inFace, const Interest& interest,\n                          shared_ptr<pit::Entry> pitEntry)\n{\n  NFD_LOG_DEBUG(\"onInterestLoop face=\" << inFace.getId() <<\n                \" interest=\" << interest.getName());\n\n  //OON\n  if (m_opFromNdnSim == nullptr){\n      return;\n  }else{\n    shared_ptr<Data> match = this->m_opFromNdnSim->Lookup(interest.shared_from_this());\n    NFD_LOG_DEBUG(\"onObjectProcessor interest=\" << interest.getName());\n    if (match != nullptr){\n      onProcessingData(*const_pointer_cast<Face>(inFace.shared_from_this()),interest,*match);\n    }\n    return;\n  }\n\n  // (drop)\n}\n\n/** \\brief compare two InRecords for picking outgoing Interest\n *  \\return true if b is preferred over a\n *\n *  This function should be passed to std::max_element over InRecordCollection.\n *  The outgoing Interest picked is the last incoming Interest\n *  that does not come from outFace.\n *  If all InRecords come from outFace, it's fine to pick that. This happens when\n *  there's only one InRecord that comes from outFace. The legit use is for\n *  vehicular network; otherwise, strategy shouldn't send to the sole inFace.\n */\nstatic inline bool\ncompare_pickInterest(const pit::InRecord& a, const pit::InRecord& b, const Face* outFace)\n{\n  bool isOutFaceA = a.getFace().get() == outFace;\n  bool isOutFaceB = b.getFace().get() == outFace;\n\n  if (!isOutFaceA && isOutFaceB) {\n    return false;\n  }\n  if (isOutFaceA && !isOutFaceB) {\n    return true;\n  }\n\n  return a.getLastRenewed() > b.getLastRenewed();\n}\n\nvoid\nForwarder::onOutgoingInterest(shared_ptr<pit::Entry> pitEntry, Face& outFace,\n                              bool wantNewNonce)\n{\n  if (outFace.getId() == INVALID_FACEID) {\n    NFD_LOG_WARN(\"onOutgoingInterest face=invalid interest=\" << pitEntry->getName());\n    return;\n  }\n  NFD_LOG_DEBUG(\"onOutgoingInterest face=\" << outFace.getId() <<\n                \" interest=\" << pitEntry->getName());\n\n  // scope control\n  if (pitEntry->violatesScope(outFace)) {\n    NFD_LOG_DEBUG(\"onOutgoingInterest face=\" << outFace.getId() <<\n                  \" interest=\" << pitEntry->getName() << \" violates scope\");\n    return;\n  }\n\n  // pick Interest\n  const pit::InRecordCollection& inRecords = pitEntry->getInRecords();\n  pit::InRecordCollection::const_iterator pickedInRecord = std::max_element(\n    inRecords.begin(), inRecords.end(), bind(&compare_pickInterest, _1, _2, &outFace));\n  BOOST_ASSERT(pickedInRecord != inRecords.end());\n  shared_ptr<Interest> interest = const_pointer_cast<Interest>(\n    pickedInRecord->getInterest().shared_from_this());\n\n  if (wantNewNonce) {\n    interest = make_shared<Interest>(*interest);\n    static boost::random::uniform_int_distribution<uint32_t> dist;\n    interest->setNonce(dist(getGlobalRng()));\n  }\n\n  // insert OutRecord\n  pitEntry->insertOrUpdateOutRecord(outFace.shared_from_this(), *interest);\n\n  // send Interest\n  outFace.sendInterest(*interest);\n  ++m_counters.getNOutInterests();\n}\n\nvoid\nForwarder::onInterestReject(shared_ptr<pit::Entry> pitEntry)\n{\n  if (pitEntry->hasUnexpiredOutRecords()) {\n    NFD_LOG_ERROR(\"onInterestReject interest=\" << pitEntry->getName() <<\n                  \" cannot reject forwarded Interest\");\n    return;\n  }\n  NFD_LOG_DEBUG(\"onInterestReject interest=\" << pitEntry->getName());\n\n  // cancel unsatisfy & straggler timer\n  this->cancelUnsatisfyAndStragglerTimer(pitEntry);\n\n  // set PIT straggler timer\n  this->setStragglerTimer(pitEntry, false);\n}\n\nvoid\nForwarder::onInterestUnsatisfied(shared_ptr<pit::Entry> pitEntry)\n{\n  NFD_LOG_DEBUG(\"onInterestUnsatisfied interest=\" << pitEntry->getName());\n\n  // invoke PIT unsatisfied callback\n  beforeExpirePendingInterest(*pitEntry);\n  this->dispatchToStrategy(pitEntry, bind(&Strategy::beforeExpirePendingInterest, _1,\n                                          pitEntry));\n\n  // goto Interest Finalize pipeline\n  this->onInterestFinalize(pitEntry, false);\n}\n\nvoid\nForwarder::onInterestFinalize(shared_ptr<pit::Entry> pitEntry, bool isSatisfied,\n                              const time::milliseconds& dataFreshnessPeriod)\n{\n  NFD_LOG_DEBUG(\"onInterestFinalize interest=\" << pitEntry->getName() <<\n                (isSatisfied ? \" satisfied\" : \" unsatisfied\"));\n\n  // Dead Nonce List insert if necessary\n  this->insertDeadNonceList(*pitEntry, isSatisfied, dataFreshnessPeriod, 0);\n\n  // PIT delete\n  this->cancelUnsatisfyAndStragglerTimer(pitEntry);\n  m_pit.erase(pitEntry);\n}\n\nvoid\nForwarder::onIncomingData(Face& inFace, const Data& data)\n{\n  // receive Data\n  NFD_LOG_DEBUG(\"onIncomingData face=\" << inFace.getId() << \" data=\" << data.getName());\n  const_cast<Data&>(data).setIncomingFaceId(inFace.getId());\n  ++m_counters.getNInDatas();\n\n  // /localhost scope control\n  bool isViolatingLocalhost = !inFace.isLocal() &&\n                              LOCALHOST_NAME.isPrefixOf(data.getName());\n  if (isViolatingLocalhost) {\n    NFD_LOG_DEBUG(\"onIncomingData face=\" << inFace.getId() <<\n                  \" data=\" << data.getName() << \" violates /localhost\");\n    // (drop)\n    return;\n  }\n\n  // PIT match\n  pit::DataMatchResult pitMatches = m_pit.findAllDataMatches(data);\n  if (pitMatches.begin() == pitMatches.end()) {\n    // goto Data unsolicited pipeline\n    this->onDataUnsolicited(inFace, data);\n    return;\n  }\n\n  // Remove Ptr<Packet> from the Data before inserting into cache, serving two purposes\n  // - reduce amount of memory used by cached entries\n  // - remove all tags that (e.g., hop count tag) that could have been associated with Ptr<Packet>\n  //\n  // Copying of Data is relatively cheap operation, as it copies (mostly) a collection of Blocks\n  // pointing to the same underlying memory buffer.\n  shared_ptr<Data> dataCopyWithoutPacket = make_shared<Data>(data);\n  dataCopyWithoutPacket->removeTag<ns3::ndn::Ns3PacketTag>();\n\n  // CS insert\n  if (m_csFromNdnSim == nullptr){\n      m_cs.insert(*dataCopyWithoutPacket);\n    }\n    else{\n      m_csFromNdnSim->Add(dataCopyWithoutPacket);\n    }\n    // OP insert, specifically for DASH\n    if(m_opFromNdnSim == nullptr){\n        m_op.insert(*dataCopyWithoutPacket);\n    }else{\n        m_opFromNdnSim->Add(dataCopyWithoutPacket);\n    }\n\n  std::set<shared_ptr<Face> > pendingDownstreams;\n  // foreach PitEntry\n  for (const shared_ptr<pit::Entry>& pitEntry : pitMatches) {\n    NFD_LOG_DEBUG(\"onIncomingData matching=\" << pitEntry->getName());\n\n    // cancel unsatisfy & straggler timer\n    this->cancelUnsatisfyAndStragglerTimer(pitEntry);\n\n    // remember pending downstreams\n    const pit::InRecordCollection& inRecords = pitEntry->getInRecords();\n    for (pit::InRecordCollection::const_iterator it = inRecords.begin();\n                                                 it != inRecords.end(); ++it) {\n      if (it->getExpiry() > time::steady_clock::now()) {\n        pendingDownstreams.insert(it->getFace());\n      }\n    }\n\n    // invoke PIT satisfy callback\n    beforeSatisfyInterest(*pitEntry, inFace, data);\n    this->dispatchToStrategy(pitEntry, bind(&Strategy::beforeSatisfyInterest, _1,\n                                            pitEntry, cref(inFace), cref(data)));\n\n    // Dead Nonce List insert if necessary (for OutRecord of inFace)\n    this->insertDeadNonceList(*pitEntry, true, data.getFreshnessPeriod(), &inFace);\n\n    // mark PIT satisfied\n    pitEntry->deleteInRecords();\n    pitEntry->deleteOutRecord(inFace);\n\n    // set PIT straggler timer\n    this->setStragglerTimer(pitEntry, true, data.getFreshnessPeriod());\n  }\n\n  // foreach pending downstream\n  for (std::set<shared_ptr<Face> >::iterator it = pendingDownstreams.begin();\n      it != pendingDownstreams.end(); ++it) {\n    shared_ptr<Face> pendingDownstream = *it;\n    if (pendingDownstream.get() == &inFace) {\n      continue;\n    }\n    // goto outgoing Data pipeline\n    this->onOutgoingData(data, *pendingDownstream);\n  }\n}\n\nvoid\nForwarder::onDataUnsolicited(Face& inFace, const Data& data)\n{\n  // accept to cache?\n  bool acceptToCache = inFace.isLocal();\n  if (acceptToCache) {\n    // CS insert\n    if (m_csFromNdnSim == nullptr){\n      m_cs.insert(data, true);\n    }\n    else{\n      m_csFromNdnSim->Add(data.shared_from_this());\n    }\n    // OP insert, specificate for DASH\n    if (m_opFromNdnSim == nullptr){\n      m_op.insert(data,true);\n    }  \n    else{\n      m_opFromNdnSim->Add(data.shared_from_this());\n    }\n  }\n\n  NFD_LOG_DEBUG(\"onDataUnsolicited face=\" << inFace.getId() <<\n                \" data=\" << data.getName() <<\n                (acceptToCache ? \" cached\" : \" not cached\"));\n}\n\nvoid\nForwarder::onOutgoingData(const Data& data, Face& outFace)\n{\n  if (outFace.getId() == INVALID_FACEID) {\n    NFD_LOG_WARN(\"onOutgoingData face=invalid data=\" << data.getName());\n    return;\n  }\n  NFD_LOG_DEBUG(\"onOutgoingData face=\" << outFace.getId() << \" data=\" << data.getName());\n\n  // /localhost scope control\n  bool isViolatingLocalhost = !outFace.isLocal() &&\n                              LOCALHOST_NAME.isPrefixOf(data.getName());\n  if (isViolatingLocalhost) {\n    NFD_LOG_DEBUG(\"onOutgoingData face=\" << outFace.getId() <<\n                  \" data=\" << data.getName() << \" violates /localhost\");\n    // (drop)\n    return;\n  }\n  // TODO traffic manager\n\n  // send Data\n  outFace.sendData(data);\n  ++m_counters.getNOutDatas();\n}\n\n\nstatic inline bool\ncompare_InRecord_expiry(const pit::InRecord& a, const pit::InRecord& b)\n{\n  return a.getExpiry() < b.getExpiry();\n}\n\nvoid\nForwarder::setUnsatisfyTimer(shared_ptr<pit::Entry> pitEntry)\n{\n  const pit::InRecordCollection& inRecords = pitEntry->getInRecords();\n  pit::InRecordCollection::const_iterator lastExpiring =\n    std::max_element(inRecords.begin(), inRecords.end(),\n    &compare_InRecord_expiry);\n\n  time::steady_clock::TimePoint lastExpiry = lastExpiring->getExpiry();\n  time::nanoseconds lastExpiryFromNow = lastExpiry  - time::steady_clock::now();\n  if (lastExpiryFromNow <= time::seconds(0)) {\n    // TODO all InRecords are already expired; will this happen?\n  }\n\n  scheduler::cancel(pitEntry->m_unsatisfyTimer);\n  pitEntry->m_unsatisfyTimer = scheduler::schedule(lastExpiryFromNow,\n    bind(&Forwarder::onInterestUnsatisfied, this, pitEntry));\n}\n\nvoid\nForwarder::setStragglerTimer(shared_ptr<pit::Entry> pitEntry, bool isSatisfied,\n                             const time::milliseconds& dataFreshnessPeriod)\n{\n  time::nanoseconds stragglerTime = time::milliseconds(100);\n\n  scheduler::cancel(pitEntry->m_stragglerTimer);\n  pitEntry->m_stragglerTimer = scheduler::schedule(stragglerTime,\n    bind(&Forwarder::onInterestFinalize, this, pitEntry, isSatisfied, dataFreshnessPeriod));\n}\n\nvoid\nForwarder::cancelUnsatisfyAndStragglerTimer(shared_ptr<pit::Entry> pitEntry)\n{\n  scheduler::cancel(pitEntry->m_unsatisfyTimer);\n  scheduler::cancel(pitEntry->m_stragglerTimer);\n}\n\nstatic inline void\ninsertNonceToDnl(DeadNonceList& dnl, const pit::Entry& pitEntry,\n                 const pit::OutRecord& outRecord)\n{\n  dnl.add(pitEntry.getName(), outRecord.getLastNonce());\n}\n\nvoid\nForwarder::insertDeadNonceList(pit::Entry& pitEntry, bool isSatisfied,\n                               const time::milliseconds& dataFreshnessPeriod,\n                               Face* upstream)\n{\n  // need Dead Nonce List insert?\n  bool needDnl = false;\n  if (isSatisfied) {\n    bool hasFreshnessPeriod = dataFreshnessPeriod >= time::milliseconds::zero();\n    // Data never becomes stale if it doesn't have FreshnessPeriod field\n    needDnl = static_cast<bool>(pitEntry.getInterest().getMustBeFresh()) &&\n              (hasFreshnessPeriod && dataFreshnessPeriod < m_deadNonceList.getLifetime());\n  }\n  else {\n    needDnl = true;\n  }\n\n  if (!needDnl) {\n    return;\n  }\n\n  // Dead Nonce List insert\n  if (upstream == 0) {\n    // insert all outgoing Nonces\n    const pit::OutRecordCollection& outRecords = pitEntry.getOutRecords();\n    std::for_each(outRecords.begin(), outRecords.end(),\n                  bind(&insertNonceToDnl, ref(m_deadNonceList), cref(pitEntry), _1));\n  }\n  else {\n    // insert outgoing Nonce of a specific face\n    pit::OutRecordCollection::const_iterator outRecord = pitEntry.getOutRecord(*upstream);\n    if (outRecord != pitEntry.getOutRecords().end()) {\n      m_deadNonceList.add(pitEntry.getName(), outRecord->getLastNonce());\n    }\n  }\n}\n\n} // namespace nfd\n",
 			"file": "NFD/daemon/fw/forwarder.cpp",
+			"file_size": 20199,
+			"file_write_time": 131263338883215693,
 			"settings":
 			{
-				"buffer_size": 18918,
+				"buffer_size": 20202,
 				"encoding": "UTF-8",
 				"line_ending": "Unix"
 			}
 		},
 		{
-			"file": "NFD/daemon/fw/oon-strategy.cpp",
+			"file": "ndn-cxx/src/data.hpp",
 			"settings":
 			{
-				"buffer_size": 3693,
+				"buffer_size": 10149,
+				"line_ending": "Unix"
+			}
+		},
+		{
+			"file": "apps/oon-processor.cpp",
+			"settings":
+			{
+				"buffer_size": 12420,
 				"encoding": "UTF-8",
-				"line_ending": "Unix"
-			}
-		},
-		{
-			"contents": "/* -*- Mode:C++; c-file-style:\"gnu\"; indent-tabs-mode:nil; -*- */\n/**\n * Copyright (c) 2014-2015,  Regents of the University of California,\n *                           Arizona Board of Regents,\n *                           Colorado State University,\n *                           University Pierre & Marie Curie, Sorbonne University,\n *                           Washington University in St. Louis,\n *                           Beijing Institute of Technology,\n *                           The University of Memphis.\n *\n * This file is part of NFD (Named Data Networking Forwarding Daemon).\n * See AUTHORS.md for complete list of NFD authors and contributors.\n *\n * NFD is free software: you can redistribute it and/or modify it under the terms\n * of the GNU General Public License as published by the Free Software Foundation,\n * either version 3 of the License, or (at your option) any later version.\n *\n * NFD is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;\n * without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR\n * PURPOSE.  See the GNU General Public License for more details.\n *\n * You should have received a copy of the GNU General Public License along with\n * NFD, e.g., in COPYING.md file.  If not, see <http://www.gnu.org/licenses/>.\n */\n\n#ifndef NFD_DAEMON_FW_STRATEGY_HPP\n#define NFD_DAEMON_FW_STRATEGY_HPP\n\n#include \"forwarder.hpp\"\n#include \"strategy-registry.hpp\"\n#include \"table/measurements-accessor.hpp\"\n\nnamespace nfd {\nnamespace fw {\n\n/** \\brief represents a forwarding strategy\n */\nclass Strategy : public enable_shared_from_this<Strategy>, noncopyable\n{\npublic:\n  /** \\brief construct a strategy instance\n   *  \\param forwarder a reference to the Forwarder, used to enable actions and accessors.\n   *         Strategy subclasses should pass this reference,\n   *         and should not keep a reference themselves.\n   *  \\param name the strategy Name.\n   *         It's recommended to include a version number as the last component.\n   */\n  Strategy(Forwarder& forwarder, const Name& name);\n\n  virtual\n  ~Strategy();\n\n  /// a Name that represent the Strategy program\n  const Name&\n  getName() const;\n\npublic: // triggers\n  /** \\brief trigger after Interest is received\n   *\n   *  The Interest:\n   *  - does not violate Scope\n   *  - is not looped\n   *  - cannot be satisfied by ContentStore\n   *  - is under a namespace managed by this strategy\n   *\n   *  The strategy should decide whether and where to forward this Interest.\n   *  - If the strategy decides to forward this Interest,\n   *    invoke this->sendInterest one or more times, either now or shortly after\n   *  - If strategy concludes that this Interest cannot be forwarded,\n   *    invoke this->rejectPendingInterest so that PIT entry will be deleted shortly\n   *\n   *  \\note The strategy is permitted to store a weak reference to fibEntry.\n   *        Do not store a shared reference, because PIT entry may be deleted at any moment.\n   *        fibEntry is passed by value to allow obtaining a weak reference from it.\n   *  \\note The strategy is permitted to store a shared reference to pitEntry.\n   *        pitEntry is passed by value to reflect this fact.\n   */\n  virtual void\n  afterReceiveInterest(const Face& inFace,\n                       const Interest& interest,\n                       shared_ptr<fib::Entry> fibEntry,\n                       shared_ptr<pit::Entry> pitEntry) = 0;\n\n  /** \\brief trigger before PIT entry is satisfied\n   *\n   *  This trigger is invoked when an incoming Data satisfies the PIT entry.\n   *  It can be invoked even if the PIT entry has already been satisfied.\n   *\n   *  In this base class this method does nothing.\n   *\n   *  \\note The strategy is permitted to store a shared reference to pitEntry.\n   *        pitEntry is passed by value to reflect this fact.\n   */\n  virtual void\n  beforeSatisfyInterest(shared_ptr<pit::Entry> pitEntry,\n                        const Face& inFace, const Data& data);\n\n  /** \\brief trigger before PIT entry expires\n   *\n   *  PIT entry expires when InterestLifetime has elapsed for all InRecords,\n   *  and it is not satisfied by an incoming Data.\n   *\n   *  This trigger is not invoked for PIT entry already satisfied.\n   *\n   *  In this base class this method does nothing.\n   *\n   *  \\note The strategy is permitted to store a shared reference to pitEntry.\n   *        pitEntry is passed by value to reflect this fact.\n   */\n  virtual void\n  beforeExpirePendingInterest(shared_ptr<pit::Entry> pitEntry);\n\nprotected: // actions\n  /// send Interest to outFace\n  VIRTUAL_WITH_TESTS void\n  sendInterest(shared_ptr<pit::Entry> pitEntry,\n               shared_ptr<Face> outFace,\n               bool wantNewNonce = false);\n\n  VIRTUAL_WITH_TESTS void\n  startObjectProcessing(shared_ptr<pit::Entry> pitEntry,\n               shared_ptr<Face> outFace,\n               const Interest& interest);\n\n  /** \\brief decide that a pending Interest cannot be forwarded\n   *\n   *  This shall not be called if the pending Interest has been\n   *  forwarded earlier, and does not need to be resent now.\n   */\n  VIRTUAL_WITH_TESTS void\n  rejectPendingInterest(shared_ptr<pit::Entry> pitEntry);\n\nprotected: // accessors\n  MeasurementsAccessor&\n  getMeasurements();\n\n  shared_ptr<Face>\n  getFace(FaceId id);\n\n  const FaceTable&\n  getFaceTable();\n\nprotected: // accessors\n  signal::Signal<FaceTable, shared_ptr<Face>>& afterAddFace;\n  signal::Signal<FaceTable, shared_ptr<Face>>& beforeRemoveFace;\n\nprivate:\n  Name m_name;\n\n  /** \\brief reference to the forwarder\n   *\n   *  Triggers can access forwarder indirectly via actions.\n   */\n  Forwarder& m_forwarder;\n\n  MeasurementsAccessor m_measurements;\n};\n\ninline const Name&\nStrategy::getName() const\n{\n  return m_name;\n}\n\ninline void\nStrategy::sendInterest(shared_ptr<pit::Entry> pitEntry,\n                       shared_ptr<Face> outFace,\n                       bool wantNewNonce)\n{\n  m_forwarder.onOutgoingInterest(pitEntry, *outFace, wantNewNonce);\n}\n\ninline void\nStrategy::startObjectProcessing(shared_ptr<pit::Entry> pitEntry,\n               shared_ptr<Face> outFace,\n               const Interest& interest){\n  //to do revise interest\n  //std::cout<<\"object processing\";\n  if (m_forwarder.m_opFromNdnSim != nullptr){\n    //std::cout<<\"object processing\";\n    shared_ptr<Data> match = m_forwarder.m_opFromNdnSim->Lookup(interest.shared_from_this());\n   //shared_ptr<Data> match = nullptr;\n    if (match != nullptr){\n    m_forwarder.onProcessingData(*match, *outFace);\n    //std::cout<<\"object processing\";\n    //m_forwarder.onOutgoingInterest(pitEntry, *outFace, false);\n    }\n  }else{\n    m_forwarder.onOutgoingInterest(pitEntry, *outFace, true);\n  }\n  m_forwarder.onOutgoingInterest(pitEntry, *outFace, true);\n\n};\n\ninline void\nStrategy::rejectPendingInterest(shared_ptr<pit::Entry> pitEntry)\n{\n  m_forwarder.onInterestReject(pitEntry);\n}\n\ninline MeasurementsAccessor&\nStrategy::getMeasurements()\n{\n  return m_measurements;\n}\n\ninline shared_ptr<Face>\nStrategy::getFace(FaceId id)\n{\n  return m_forwarder.getFace(id);\n}\n\ninline const FaceTable&\nStrategy::getFaceTable()\n{\n  return m_forwarder.getFaceTable();\n}\n\n} // namespace fw\n} // namespace nfd\n\n#endif // NFD_DAEMON_FW_STRATEGY_HPP\n",
-			"file": "NFD/daemon/fw/strategy.hpp",
-			"file_size": 7247,
-			"file_write_time": 131225359989281116,
-			"settings":
-			{
-				"buffer_size": 7227,
-				"line_ending": "Unix"
-			}
-		},
-		{
-			"file": "NFD/daemon/fw/oon-strategy.hpp",
-			"settings":
-			{
-				"buffer_size": 2107,
-				"encoding": "UTF-8",
-				"line_ending": "Unix"
-			}
-		},
-		{
-			"file": "NFD/daemon/table/fib-nexthop.hpp",
-			"settings":
-			{
-				"buffer_size": 1832,
 				"line_ending": "Unix"
 			}
 		}
@@ -218,27 +213,75 @@
 	},
 	"expanded_folders":
 	[
-		"/home/lockheed/oonSIM/ns-3/src/ndnSIM",
-		"/home/lockheed/oonSIM/ns-3/src/ndnSIM/NFD",
-		"/home/lockheed/oonSIM/ns-3/src/ndnSIM/NFD/daemon",
-		"/home/lockheed/oonSIM/ns-3/src/ndnSIM/examples"
+		"/home/percy/ndnSIM/ns-3/src/ndnSIM",
+		"/home/percy/ndnSIM/ns-3/src/ndnSIM/examples",
+		"/home/percy/ndnSIM/ns-3/src/ndnSIM/model",
+		"/home/percy/ndnSIM/ns-3/src/ndnSIM/tests",
+		"/home/percy/ndnSIM/ns-3/src/ndnSIM/tests/unit-tests"
 	],
 	"file_history":
 	[
-		"/home/lockheed/oonSIM/ns-3/src/ndnSIM/NFD/daemon/fw/forwarder.cpp",
-		"/home/lockheed/oonSIM/ns-3/src/ndnSIM/NFD/daemon/fw/best-route-strategy.cpp",
-		"/home/lockheed/oonSIM/ns-3/src/ndnSIM/NFD/daemon/fw/best-route-strategy.hpp",
-		"/home/lockheed/oonSIM/ns-3/src/ndnSIM/ndn-cxx/src/data.hpp",
-		"/home/lockheed/oonSIM/ns-3/src/ndnSIM/ndn-cxx/src/encoding/block.hpp",
-		"/home/lockheed/multimediaData/AVC/BBB-2s-v2.mpd",
-		"/home/lockheed/multimediaData/AVC/BBB-2s-v1.mpd",
-		"/home/lockheed/oonSIM/ns-3/src/ndnSIM/ndn-cxx/src/encoding/block.cpp",
-		"/home/lockheed/oonSIM/ns-3/src/ndnSIM/NFD/daemon/fw/oon-strategy.hpp",
-		"/home/lockheed/oonSIM/ns-3/src/ndnSIM/NFD/daemon/fw/oon-strategy.cpp",
-		"/home/lockheed/oonSIM/ns-3/src/ndnSIM/examples/ndn-file-simple-example3-enhanced.cpp",
-		"/home/lockheed/oonSIM/ns-3/src/ndnSIM/examples/ndn-file-simple-example1.cpp",
-		"/home/lockheed/oonSIM/ns-3/src/ndnSIM/examples/ndn-simple.cpp",
-		"/home/lockheed/oonSIM/ns-3/src/ndnSIM/examples/ndn-simple-wifi.cpp",
+		"/home/percy/ndnSIM/ns-3/src/ndnSIM/apps/name_map.hpp",
+		"/home/percy/ndnSIM/ns-3/src/ndnSIM/ndn-cxx/src/encoding/block.hpp",
+		"/home/percy/ndnSIM/ns-3/src/ndnSIM/ndn-cxx/src/encoding/buffer.hpp",
+		"/home/percy/ndnSIM/ns-3/src/ndnSIM/examples/ndn-file-simple-example1.cpp",
+		"/home/percy/ndnSIM/ns-3/src/ndnSIM/apps/oon-fileserver.cpp",
+		"/home/percy/ndnSIM/ns-3/src/ndnSIM/apps/oon-fileserver.hpp",
+		"/home/percy/ndnSIM/ns-3/src/ndnSIM/apps/ndn-app.hpp",
+		"/home/percy/ndnSIM/ns-3/src/ndnSIM/apps/ndn-app.cpp",
+		"/home/percy/ndnSIM/ns-3/src/ndnSIM/apps/ndn-fake-multimedia-server.cpp",
+		"/home/percy/ndnSIM/ns-3/src/ndnSIM/model/ndn-app-face.hpp",
+		"/home/percy/ndnSIM/ns-3/src/ndnSIM/model/ndn-app-face.cpp",
+		"/home/percy/ndnSIM/ns-3/src/ndnSIM/NFD/tests/daemon/face/tcp.t.cpp",
+		"/home/percy/ndnSIM/ns-3/src/ndnSIM/apps/ndn-fake-fileserver.cpp",
+		"/home/percy/ndnSIM/ns-3/src/ndnSIM/ndn-cxx/src/encoding/block.cpp",
+		"/home/percy/ndnSIM/ns-3/src/ndnSIM/ndn-cxx/src/data.cpp",
+		"/home/percy/ndnSIM/ns-3/src/ndnSIM/ndn-cxx/src/encoding/encoding-buffer-fwd.hpp",
+		"/home/percy/ndnSIM/ns-3/src/ndnSIM/examples/oon-avc-wifi.cpp",
+		"/home/percy/ndnSIM/ns-3/src/ndnSIM/examples/ndn-avc-wifi.cpp",
+		"/home/percy/ndnSIM/ns-3/src/ndnSIM/examples/ndn-file-simple-example5-virtual.cpp",
+		"/home/percy/ndnSIM/ns-3/src/ndnSIM/NFD/daemon/fw/oon-strategy.cpp",
+		"/home/percy/ndnSIM/ns-3/src/ndnSIM/NFD/daemon/fw/strategy.hpp",
+		"/home/percy/ndnSIM/ns-3/src/ndnSIM/NFD/daemon/fw/forwarder.hpp",
+		"/home/percy/ndnSIM/ns-3/src/ndnSIM/NFD/daemon/fw/forwarder.cpp",
+		"/home/percy/ndnSIM/ns-3/wscript",
+		"/home/percy/ndnSIM/ns-3/.gitmodules",
+		"/home/percy/ndnSIM/ns-3/src/ndnSIM/ndn-cxx/src/util/sqlite3-statement.cpp",
+		"/home/percy/ndnSIM/ns-3/src/ndnSIM/NFD/daemon/table/cs.hpp",
+		"/home/percy/ndnSIM/ns-3/src/ndnSIM/NFD/daemon/table/cs.cpp",
+		"/home/percy/ndnSIM/ns-3/src/ndnSIM/NFD/daemon/table/cs-entry.hpp",
+		"/home/percy/ndnSIM/ns-3/src/ndnSIM/ndn-cxx/src/util/sqlite3-statement.hpp",
+		"/home/percy/ndnSIM/ns-3/src/ndnSIM/examples/ndn-congestion-alt-topo-plugin.cpp",
+		"/home/percy/ndnSIM/ns-3/src/ndnSIM/NFD/.gitmodules",
+		"/home/percy/ndnSIM/ns-3/src/ndnSIM/.gitmodules",
+		"/home/percy/ndnSIM/.gitmodules",
+		"/home/percy/ndnSIM/ns-3/src/ndnSIM/examples/ndn-multimedia-simple-avc-example1.cpp",
+		"/home/percy/ndnSIM/ns-3/src/ndnSIM/NFD/daemon/fw/best-route-strategy.cpp",
+		"/home/percy/multimediaData/AVC/BBB-2s.mpd",
+		"/home/percy/ndnSIM/ns-3/src/ndnSIM/apps/ndn-multimedia-consumer.hpp",
+		"/home/percy/ndnSIM/ns-3/src/ndnSIM/apps/ndn-multimedia-consumer.cpp",
+		"/home/percy/ndnSIM/ns-3/src/ndnSIM/apps/ndn-fileserver.cpp",
+		"/home/percy/ndnSIM/ns-3/src/ndnSIM/model/ndn-l3-protocol.cpp",
+		"/home/percy/ndnSIM/ns-3/src/ndnSIM/NFD/daemon/fw/strategy.cpp",
+		"/home/percy/ndnSIM/ns-3/src/ndnSIM/NFD/daemon/fw/best-route-strategy2.hpp",
+		"/home/percy/ndnSIM/ns-3/src/ndnSIM/NFD/daemon/fw/best-route-strategy.hpp",
+		"/home/percy/ndnSIM/ns-3/src/ndnSIM/examples/ndn-file-simple-example4-multi.cpp",
+		"/home/percy/ndnSIM/ns-3/src/ndnSIM/examples/ndn-file-simple-example2-tracers.cpp",
+		"/home/percy/ndnSIM/ns-3/src/ndnSIM/examples/ndn-file-simple-example3-enhanced.cpp",
+		"/home/percy/ndnSIM/ns-3/src/ndnSIM/NFD/daemon/fw/strategy-registry.cpp",
+		"/home/percy/ndnSIM/ns-3/src/ndnSIM/utils/tracers/ndn-dashplayer-tracer.cpp",
+		"/home/percy/ndnSIM/ns-3/src/ndnSIM/utils/tracers/ndn-dashplayer-tracer.hpp",
+		"/home/percy/ndnSIM/ns-3/src/ndnSIM/examples/ndn-multimedia-avc-server.cpp",
+		"/home/percy/ndnSIM/ns-3/src/ndnSIM/model/cs/ndn-content-store.hpp",
+		"/home/percy/ndnSIM/ns-3/src/ndnSIM/helper/ndn-stack-helper.cpp",
+		"/home/percy/ndnSIM/ns-3/src/ndnSIM/helper/ndn-stack-helper.hpp",
+		"/home/percy/ndnSIM/ns-3/src/ndnSIM/ndn-cxx/src/data.hpp",
+		"/home/percy/ndnSIM/ns-3/src/ndnSIM/NFD/tests/daemon/fw/strategy-tester.hpp",
+		"/home/percy/ndnSIM/ns-3/src/ndnSIM/NFD/daemon/face/face.hpp",
+		"/home/percy/ndnSIM/ns-3/src/ndnSIM/examples/ndn-simple.cpp",
+		"/home/percy/ndnSIM/ns-3/src/ndnSIM/examples/ndn-simple-wifi.cpp",
+		"/home/percy/multimediaData/AVC/BBB/BigBuckBunnyNonSeg_2s_isoffmain_DIS_23009_1_v_2_1c2_2011_08_30.mpd",
+		"/home/percy/multimediaData/AVC/BBB/BigBuckBunny_2s_isoffmain_DIS_23009_1_v_2_1c2_2011_08_30.mpd",
 		"/home/lockheed/AMuStNDN/ns-3/src/ndnSIM/examples/ndn-file-simple-example4-multi.cpp",
 		"/home/lockheed/AMuStNDN/ns-3/src/ndnSIM/examples/ndn-file-simple-example1.a",
 		"/home/lockheed/AMuStNDN/ns-3/src/ndnSIM/examples/dash-ndn-wifi.cpp",
@@ -299,13 +342,18 @@
 	],
 	"find":
 	{
-		"height": 35.0
+		"height": 41.0
 	},
 	"find_in_files":
 	{
-		"height": 0.0,
+		"height": 111.0,
 		"where_history":
 		[
+			"/home/percy/ndnSIM/ns-3/src/",
+			"/home/percy/ndnSIM/ns-3/src/ndnSIM/",
+			"/home/percy/ndnSIM/ns-3/src/ndnSIM/examples",
+			"/home/percy/ndnSIM/ns-3/src/ndnSIM/",
+			"/home/percy/ndnSIM/ns-3/src/ndnSIM/NFD/daemon"
 		]
 	},
 	"find_state":
@@ -313,13 +361,70 @@
 		"case_sensitive": false,
 		"find_history":
 		[
+			"cout",
+			"File",
+			"ns3::ndn::OONProcessor",
+			"D_ACTUAL_OVERHEAD",
+			"m_transmittedDatas",
+			"Data",
+			"Hit",
+			"onProcessingData",
+			"onContentStoreHit",
+			"start",
+			"m_cs",
+			"onProcessingData",
+			"Processing",
+			"processing",
+			"m_opFromNdnSim",
+			"setOpFromNdnSim",
+			"setCsFromNdnSim",
+			"m_csFromNdnSim",
+			"      m_csFromNdnSim->Add(data.shared_from_this());\nm_csFromNdnSim",
+			"      m_csFromNdnSim->Add(data.shared_from_this());\nsetCsFromNdnSim",
+			"m_csFromNdnSim",
+			"m_cs",
+			"onOutgoingData",
+			"onContentStoreHit",
+			"Object",
+			"*match",
+			"match",
+			"m_cs",
+			"onContentStoreHit",
+			"beforeSatisfyInterest",
+			"onContentStoreHit",
+			"m_cs",
+			"op",
+			"lockheed",
+			"m_cs",
+			"setCs",
+			"m_maxCsSize",
+			"m_contentStoreFactory",
+			"m_maxCsSize",
 			"sendInterest",
 			"startObjectProcessing",
+			"*match",
+			"match",
 			"onProcessingData",
-			"object",
-			"/*",
-			"SegmentBase",
-			"value_size",
+			"onContentStore",
+			"onProcessingData",
+			"onObjec",
+			"onProcessingData",
+			"onObjectProcessorHit",
+			"interest",
+			"intere",
+			"onContentStoreHit",
+			"onContentHit",
+			"onObjectProcessorHit",
+			"onContent",
+			"onOb",
+			"onOutgoingData",
+			"onOutData",
+			"onOut",
+			"onContentStoreHit",
+			"OnContent",
+			"canForwardTo",
+			"percy",
+			"~",
 			"percy",
 			"OfdmRate54Mbps",
 			"m_csFromNdnSim",
@@ -359,90 +464,61 @@
 	"folders":
 	[
 		{
-			"path": "/home/lockheed/oonSIM/ns-3/src/ndnSIM"
+			"path": "/home/percy/ndnSIM/ns-3/src/ndnSIM"
 		}
 	],
 	"groups":
 	[
 		{
-			"selected": 1,
+			"selected": 0,
 			"sheets":
 			[
 				{
 					"buffer": 0,
-					"file": "examples/ndn-avc-wifi.cpp",
+					"file": "NFD/daemon/fw/forwarder.cpp",
 					"semi_transient": false,
 					"settings":
 					{
-						"buffer_size": 8364,
+						"buffer_size": 20202,
 						"regions":
 						{
 						},
 						"selection":
 						[
 							[
-								7453,
-								7453
+								6830,
+								6830
 							]
 						],
 						"settings":
 						{
+							"spell_check": true,
 							"syntax": "Packages/C++/C++.sublime-syntax",
 							"tab_size": 2,
 							"translate_tabs_to_spaces": true
 						},
-						"translation.x": 0.0,
-						"translation.y": 2538.0,
-						"zoom_level": 1.0
-					},
-					"stack_index": 1,
-					"type": "text"
-				},
-				{
-					"buffer": 1,
-					"file": "examples/ndn-multimedia-simple-svc-example2-tracers.cpp",
-					"semi_transient": false,
-					"settings":
-					{
-						"buffer_size": 4069,
-						"regions":
-						{
-						},
-						"selection":
-						[
-							[
-								3855,
-								3855
-							]
-						],
-						"settings":
-						{
-							"syntax": "Packages/C++/C++.sublime-syntax",
-							"tab_size": 2,
-							"translate_tabs_to_spaces": true
-						},
-						"translation.x": 0.0,
-						"translation.y": 1388.0,
+						"translation.x": 7.0,
+						"translation.y": 3704.0,
 						"zoom_level": 1.0
 					},
 					"stack_index": 0,
 					"type": "text"
 				},
 				{
-					"buffer": 2,
-					"file": "examples/oon-multimedia-brite-example1.cpp",
+					"buffer": 1,
+					"file": "ndn-cxx/src/data.hpp",
 					"semi_transient": false,
 					"settings":
 					{
-						"buffer_size": 7163,
+						"buffer_size": 10149,
 						"regions":
 						{
 						},
 						"selection":
 						[
 							[
-								6842,
-								6842
+								2275,
+								2275
 							]
 						],
 						"settings":
@@ -452,57 +528,27 @@
 							"translate_tabs_to_spaces": true
 						},
 						"translation.x": 0.0,
-						"translation.y": 2688.0,
-						"zoom_level": 1.0
-					},
-					"stack_index": 3,
-					"type": "text"
-				},
-				{
-					"buffer": 3,
-					"file": "examples/oon-avc-wifi.cpp",
-					"semi_transient": false,
-					"settings":
-					{
-						"buffer_size": 8694,
-						"regions":
-						{
-						},
-						"selection":
-						[
-							[
-								7783,
-								7783
-							]
-						],
-						"settings":
-						{
-							"syntax": "Packages/C++/C++.sublime-syntax",
-							"tab_size": 2,
-							"translate_tabs_to_spaces": true
-						},
-						"translation.x": -0.0,
-						"translation.y": 2484.0,
+						"translation.y": 5513.0,
 						"zoom_level": 1.0
 					},
 					"stack_index": 2,
 					"type": "text"
 				},
 				{
-					"buffer": 4,
-					"file": "NFD/daemon/fw/forwarder.cpp",
+					"buffer": 2,
+					"file": "apps/oon-processor.cpp",
 					"semi_transient": false,
 					"settings":
 					{
-						"buffer_size": 18918,
+						"buffer_size": 12420,
 						"regions":
 						{
 						},
 						"selection":
 						[
 							[
-								15054,
-								15054
+								6598,
+								6598
 							]
 						],
 						"settings":
@@ -512,128 +558,10 @@
 							"translate_tabs_to_spaces": true
 						},
 						"translation.x": 0.0,
-						"translation.y": 7638.0,
+						"translation.y": 3782.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 4,
-					"type": "text"
-				},
-				{
-					"buffer": 5,
-					"file": "NFD/daemon/fw/oon-strategy.cpp",
-					"semi_transient": false,
-					"settings":
-					{
-						"buffer_size": 3693,
-						"regions":
-						{
-						},
-						"selection":
-						[
-							[
-								1386,
-								1386
-							]
-						],
-						"settings":
-						{
-							"syntax": "Packages/C++/C++.sublime-syntax",
-							"tab_size": 2,
-							"translate_tabs_to_spaces": true
-						},
-						"translation.x": 0.0,
-						"translation.y": 0.0,
-						"zoom_level": 1.0
-					},
-					"stack_index": 5,
-					"type": "text"
-				},
-				{
-					"buffer": 6,
-					"file": "NFD/daemon/fw/strategy.hpp",
-					"semi_transient": false,
-					"settings":
-					{
-						"buffer_size": 7227,
-						"regions":
-						{
-						},
-						"selection":
-						[
-							[
-								1478,
-								1478
-							]
-						],
-						"settings":
-						{
-							"syntax": "Packages/C++/C++.sublime-syntax",
-							"tab_size": 2,
-							"translate_tabs_to_spaces": true
-						},
-						"translation.x": 0.0,
-						"translation.y": 0.0,
-						"zoom_level": 1.0
-					},
-					"stack_index": 6,
-					"type": "text"
-				},
-				{
-					"buffer": 7,
-					"file": "NFD/daemon/fw/oon-strategy.hpp",
-					"semi_transient": false,
-					"settings":
-					{
-						"buffer_size": 2107,
-						"regions":
-						{
-						},
-						"selection":
-						[
-							[
-								1591,
-								1591
-							]
-						],
-						"settings":
-						{
-							"syntax": "Packages/C++/C++.sublime-syntax"
-						},
-						"translation.x": 0.0,
-						"translation.y": 108.0,
-						"zoom_level": 1.0
-					},
-					"stack_index": 7,
-					"type": "text"
-				},
-				{
-					"buffer": 8,
-					"file": "NFD/daemon/table/fib-nexthop.hpp",
-					"semi_transient": false,
-					"settings":
-					{
-						"buffer_size": 1832,
-						"regions":
-						{
-						},
-						"selection":
-						[
-							[
-								1737,
-								1737
-							]
-						],
-						"settings":
-						{
-							"syntax": "Packages/C++/C++.sublime-syntax",
-							"tab_size": 2,
-							"translate_tabs_to_spaces": true
-						},
-						"translation.x": 0.0,
-						"translation.y": 438.0,
-						"zoom_level": 1.0
-					},
-					"stack_index": 8,
+					"stack_index": 1,
 					"type": "text"
 				}
 			]
@@ -705,10 +633,14 @@
 	},
 	"select_symbol":
 	{
-		"height": 54.0,
-		"last_filter": "onContentStoreHit",
+		"height": 450.0,
+		"last_filter": "content",
 		"selected_items":
 		[
+			[
+				"content",
+				"ContentStore"
+			],
 			[
 				"onContentStoreHit",
 				"onContentStoreHit"
@@ -746,7 +678,7 @@
 				"CacheHits"
 			]
 		],
-		"width": 1289.0
+		"width": 678.0
 	},
 	"selected_group": 0,
 	"settings":
@@ -756,7 +688,7 @@
 	"show_open_files": true,
 	"show_tabs": true,
 	"side_bar_visible": true,
-	"side_bar_width": 293.0,
+	"side_bar_width": 255.0,
 	"status_bar_visible": true,
 	"template_settings":
 	{

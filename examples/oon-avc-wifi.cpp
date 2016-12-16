@@ -142,11 +142,11 @@ main(int argc, char* argv[])
   consumerHelper.SetAttribute("StartUpDelay", StringValue("0.5"));
   
   consumerHelper.SetAttribute("AdaptationLogic", StringValue("dash::player::RateBasedAdaptationLogic"));
-  consumerHelper.SetAttribute("MpdFileToRequest", StringValue(std::string("/home/lockheed/multimediaData/AVC/BBB-2s.mpd" )));
+  consumerHelper.SetAttribute("MpdFileToRequest", StringValue(std::string("/home/percy/multimediaData/AVC/BBB-2s.mpd" )));
 
   ApplicationContainer consumer_0 = consumerHelper.Install(nodes.Get(0));
   consumer_0.Start(Seconds(0.5)); //precache
-  consumerHelper.SetAttribute("MpdFileToRequest", StringValue(std::string("/home/lockheed/multimediaData/AVC/BBB-2s-v1.mpd" )));
+  consumerHelper.SetAttribute("MpdFileToRequest", StringValue(std::string("/home/percy/multimediaData/AVC/BBB-2s.mpd" )));
   ApplicationContainer consumer_1 = consumerHelper.Install(nodes.Get(1));
   consumer_1.Start(Seconds(1000));
   ApplicationContainer consumer_2 = consumerHelper.Install(nodes.Get(2));
@@ -163,15 +163,15 @@ main(int argc, char* argv[])
                                MakeCallback(&FileDownloadStartedTrace));
 
   // 5. Set up server devices
-  ndn::AppHelper mpdProducerHelper("ns3::ndn::FileServer");
-  mpdProducerHelper.SetPrefix("/home/lockheed/multimediaData/AVC/");
-  mpdProducerHelper.SetAttribute("ContentDirectory", StringValue("/home/lockheed/multimediaData/AVC/"));
+  ndn::AppHelper mpdProducerHelper("ns3::ndn::Processor");
+  mpdProducerHelper.SetPrefix("/home/percy/multimediaData/AVC/");
+  mpdProducerHelper.SetAttribute("ContentDirectory", StringValue("/home/percy/multimediaData/AVC/"));
   mpdProducerHelper.Install(nodes.Get(3));
   //mpdProducerHelper.Install(nodes.Get(0));
   // 6. Set global routing?
   ndn::GlobalRoutingHelper ndnGlobalRoutingHelper;
   ndnGlobalRoutingHelper.InstallAll();
-  ndnGlobalRoutingHelper.AddOrigins("/home/lockheed/multimediaData/",nodes.Get(3));
+  ndnGlobalRoutingHelper.AddOrigins("/home/percy/multimediaData/",nodes.Get(3));
   //ndnGlobalRoutingHelper.AddOrigins("/home/lockheed/multimediaData/",nodes.Get(0));
   ndn::GlobalRoutingHelper::CalculateRoutes();
 

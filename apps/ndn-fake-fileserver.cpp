@@ -177,7 +177,7 @@ FakeFileServer::OnInterest(shared_ptr<const Interest> interest)
     return;
 
   Name dataName(interest->getName());
-
+  
   // get last postfix
   ndn::Name  lastPostfix = dataName.getSubName(dataName.size() -1 );
   NS_LOG_INFO("> LastPostfix = " << lastPostfix);
