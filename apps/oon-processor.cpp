@@ -155,7 +155,6 @@ Processor::StartApplication()
   App::StartApplication();
 
   FibHelper::AddRoute(GetNode(), m_prefix, m_face, 0);
-
   m_MTU = GetFaceMTU(0);
 }
 

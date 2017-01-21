@@ -51,6 +51,11 @@ class NullFace;
  *
  *  Forwarder owns all faces and tables, and implements forwarding pipelines.
  */
+//OON
+typedef std::map<std::string, int> NAME_MAP;
+typedef std::map<int, std::string> RENAME_MAP;
+
+
 class Forwarder
 {
 public:
@@ -138,10 +143,12 @@ PUBLIC_WITH_TESTS_ELSE_PRIVATE: // pipelines
   onContentStoreMiss(const Face& inFace, shared_ptr<pit::Entry> pitEntry, const Interest& interest);
 
 
+
   //OON
   void
   onObjectProcessorMiss(const Face& inFace, shared_ptr<pit::Entry> pitEntry, const Interest& interest);
-
+  void
+  onObjectProcessorHit(const Face& inFace, shared_ptr<pit::Entry> pitEntry, const Interest& interest);
   /** \brief Content Store hit pipeline
   */
   void

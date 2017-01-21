@@ -42,6 +42,65 @@ using fw::Strategy;
 
 const Name Forwarder::LOCALHOST_NAME("ndn:/localhost");
 
+//OON
+NAME_MAP
+Forwarder::init_name_map(){
+  NAME_MAP  temp;
+  temp["_test"] = 0; // test default
+  temp["_50kbit"] = 1;
+  temp["_100kbit"] = 2;
+  temp["_150kbit"] = 3;
+  temp["_200kbit"] = 4;
+  temp["_250kbit"] = 5;
+  temp["_300kbit"] = 6;
+  temp["_400kbit"] = 7;
+  temp["_500kbit"] = 8;
+  temp["_600kbit"] = 9;
+  temp["_700kbit"] = 10;
+  temp["_900kbit"] = 11;
+  temp["_1200kbit"] = 12;
+  temp["_1500kbit"] = 13;
+  temp["_2000kbit"] = 14;
+  temp["_2500kbit"] = 15;
+  temp["_3000kbit"] = 16;
+  temp["_4000kbit"] = 17;
+  temp["_5000kbit"] = 18;
+  temp["_6000kbit"] =19;
+  temp["_8000kbit"] = 20;
+  return temp;
+}
+
+
+RENAME_MAP
+Forwarder::init_rename_map(){
+  RENAME_MAP  temp;
+  temp[0] = "_success";
+  temp[1]="_50kbit";
+  temp[2]="_100kbit";
+  temp[3]="_150kbit";
+  temp[4]="_200kbit";
+  temp[5]="_250kbit";
+  temp[6]="_300kbit";
+  temp[7]="_400kbit";
+  temp[8]="_500kbit";
+  temp[9]="_600kbit";
+  temp[10]="_700kbit";
+  temp[11]="_900kbit";
+  temp[12]="_1200kbit";
+  temp[13]="_1500kbit";
+  temp[14]="_2000kbit";
+  temp[15]="_2500kbit";
+  temp[16]="_3000kbit";
+  temp[17]="_4000kbit";
+  temp[18]="_5000kbit";
+  temp[19]="_6000kbit";
+  temp[20] = "_8000kbit";
+  return temp;
+}
+
+NAME_MAP Forwarder::name_map(Forwarder::init_name_map());
+RENAME_MAP Forwarder::rename_map(Forwarder::init_rename_map());
+
 Forwarder::Forwarder()
   : m_faceTable(*this)
   , m_fib(m_nameTree)
