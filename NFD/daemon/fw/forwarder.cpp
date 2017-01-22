@@ -45,8 +45,7 @@ const Name Forwarder::LOCALHOST_NAME("ndn:/localhost");
 //OON
 NAME_MAP
 Forwarder::init_name_map(){
-  NAME_MAP  temp;
-  temp["_test"] = 0; // test default
+  NAME_MAP  temp;// test default
   temp["_50"] = 1;
   temp["_100"] = 2;
   temp["_150"] = 3;
@@ -74,7 +73,6 @@ Forwarder::init_name_map(){
 RENAME_MAP
 Forwarder::init_rename_map(){
   RENAME_MAP  temp;
-  temp[0] = "_success";
   temp[1]="_50";
   temp[2]="_100";
   temp[3]="_150";
@@ -237,38 +235,35 @@ Forwarder::onObjectProcessorHit(const Face& inFace,
     std::string parent_fname;
     std::string movie = "bunny_2s";
     size_t pos_1 = childname.find(movie);
-    size_t pos_2 = childname.find("kbit",pos_1+1);
     bool tag = false;
+    size_t pos_2 = childname.find("kbit",pos_1+1);
     if (pos_1 != std::string::npos && pos_2 != std::string::npos){
       std::string prefix = childname.substr(0, pos_1+8);
       std::string suffix = childname.substr(pos_2);;
       std::string quality = childname.substr(pos_1+8,pos_2-pos_1-9);
-      
+      tag = false;
       shared_ptr<Data> match = nullptr;
-      uint index = 1;
+      uint index = name_map[childname.substr(pos_1+8,pos_2-pos_1-9)];
       std::string parentname;
       while (!tag && match == nullptr && index <20){
         index ++;
-        if (name_map[childname.substr(pos_1+8,pos_2-pos_1-9)]<20){
-          parentname = rename_map[name_map[childname.substr(pos_1+8,pos_2-pos_1-9)]+index];
-        }
+        parentname = rename_map[index];
         parentname = prefix+parentname+suffix;
-        std::cout<<parentname<<std::endl;
-        Name parent_Name(parentname);
+        //<<parentname<<std::endl;
+        Name parent_Name(childname);
         Interest parent_interest(parent_Name);
         parent_interest.setNonce(child_interest.getNonce());
-        //time::milliseconds interestLifeTime(m_interestLifeTime.GetMilliSeconds());
-        //parent_interest.setInterestLifetime(interestLifeTime);
-        //parent_interest.setLink(child_interest.getLink());
+        parent_interest.setInterestLifetime(child_interest.getInterestLifetime());
+        //NS_LOG_INFO("> Creating INTEREST for " << interest.getName());
         if (m_opFromNdnSim == nullptr) {
           m_cs.find(parent_interest,
-                    bind(&Forwarder::onProcessingData, this, ref(inFace), _1, tag , _2),
+                    bind(&Forwarder::onProcessingData, this, ref(inFace), _1, &tag , _2),
                     bind(&Forwarder::onContentStoreMiss, this, ref(inFace), pitEntry, _1));
         } 
         else {
           match = m_csFromNdnSim->Lookup(parent_interest.shared_from_this());
           if (match != nullptr) {
-            this->onProcessingData(inFace, parent_interest, tag, *match);
+            this->onProcessingData(inFace, parent_interest, &tag, *match);
           }
         }
       }
@@ -309,16 +304,17 @@ Forwarder::onContentStoreHit(const Face& inFace,
 
 //OON
 void
-Forwarder::onProcessingData(const Face& inFace, const Interest& parent_interest, bool& tag, const Data& data)
+Forwarder::onProcessingData(const Face& inFace, const Interest& parent_interest, bool* tag, const Data& data)
 {   
     NFD_LOG_DEBUG("onProcessingData parent interest=" << parent_interest.getName());
+    *tag = true;
     //todo
     //volatile size_t i = 1;
     //size_t size = data.getContent().value_size();
     //for (i = 1; i < size; i++); //to do data processing
     //onOutgoingData(data,outFace);
-    std::cout<<"processing..."<<"\t'";
-     const_pointer_cast<Data>(data.shared_from_this())->setIncomingFaceId(FACEID_OBJECT_PROCESSOR);
+    std::cout<<"processing..."<<std::endl<<parent_interest.getName()<<"\t";
+    const_pointer_cast<Data>(data.shared_from_this())->setIncomingFaceId(FACEID_OBJECT_PROCESSOR);
     if (inFace.getId() == INVALID_FACEID) {
       NFD_LOG_WARN("onOutgoingData face=invalid data=" << data.getName());
       return;
@@ -327,7 +323,6 @@ Forwarder::onProcessingData(const Face& inFace, const Interest& parent_interest,
     NFD_LOG_DEBUG("onOutgoingData face=" << inFace.getId() << " data=" << data.getName());
     const_pointer_cast<Face>(inFace.shared_from_this())->sendData(data);
     ++m_counters.getNOutDatas();
-    tag = true;
     return;
   }
 

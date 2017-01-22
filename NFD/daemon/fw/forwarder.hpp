@@ -162,7 +162,7 @@ PUBLIC_WITH_TESTS_ELSE_PRIVATE: // pipelines
 
 //OON
   void
-  onProcessingData(const Face& inFace, const Interest& parent_interest, bool& tag, const Data& data);
+  onProcessingData(const Face& inFace, const Interest& parent_interest, bool* tag, const Data& data);
 //void Forwarder::onProcessingData(Face& outFace, const Interest& interest, const Data& data)
 
 
