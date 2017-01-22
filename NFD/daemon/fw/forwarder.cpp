@@ -47,26 +47,26 @@ NAME_MAP
 Forwarder::init_name_map(){
   NAME_MAP  temp;
   temp["_test"] = 0; // test default
-  temp["_50kbit"] = 1;
-  temp["_100kbit"] = 2;
-  temp["_150kbit"] = 3;
-  temp["_200kbit"] = 4;
-  temp["_250kbit"] = 5;
-  temp["_300kbit"] = 6;
-  temp["_400kbit"] = 7;
-  temp["_500kbit"] = 8;
-  temp["_600kbit"] = 9;
-  temp["_700kbit"] = 10;
-  temp["_900kbit"] = 11;
-  temp["_1200kbit"] = 12;
-  temp["_1500kbit"] = 13;
-  temp["_2000kbit"] = 14;
-  temp["_2500kbit"] = 15;
-  temp["_3000kbit"] = 16;
-  temp["_4000kbit"] = 17;
-  temp["_5000kbit"] = 18;
-  temp["_6000kbit"] =19;
-  temp["_8000kbit"] = 20;
+  temp["_50"] = 1;
+  temp["_100"] = 2;
+  temp["_150"] = 3;
+  temp["_200"] = 4;
+  temp["_250"] = 5;
+  temp["_300"] = 6;
+  temp["_400"] = 7;
+  temp["_500"] = 8;
+  temp["_600"] = 9;
+  temp["_700"] = 10;
+  temp["_900"] = 11;
+  temp["_1200"] = 12;
+  temp["_1500"] = 13;
+  temp["_2000"] = 14;
+  temp["_2500"] = 15;
+  temp["_3000"] = 16;
+  temp["_4000"] = 17;
+  temp["_5000"] = 18;
+  temp["_6000"] =19;
+  temp["_8000"] = 20;
   return temp;
 }
 
@@ -75,26 +75,26 @@ RENAME_MAP
 Forwarder::init_rename_map(){
   RENAME_MAP  temp;
   temp[0] = "_success";
-  temp[1]="_50kbit";
-  temp[2]="_100kbit";
-  temp[3]="_150kbit";
-  temp[4]="_200kbit";
-  temp[5]="_250kbit";
-  temp[6]="_300kbit";
-  temp[7]="_400kbit";
-  temp[8]="_500kbit";
-  temp[9]="_600kbit";
-  temp[10]="_700kbit";
-  temp[11]="_900kbit";
-  temp[12]="_1200kbit";
-  temp[13]="_1500kbit";
-  temp[14]="_2000kbit";
-  temp[15]="_2500kbit";
-  temp[16]="_3000kbit";
-  temp[17]="_4000kbit";
-  temp[18]="_5000kbit";
-  temp[19]="_6000kbit";
-  temp[20] = "_8000kbit";
+  temp[1]="_50";
+  temp[2]="_100";
+  temp[3]="_150";
+  temp[4]="_200";
+  temp[5]="_250";
+  temp[6]="_300";
+  temp[7]="_400";
+  temp[8]="_500";
+  temp[9]="_600";
+  temp[10]="_700";
+  temp[11]="_900";
+  temp[12]="_1200";
+  temp[13]="_1500";
+  temp[14]="_2000";
+  temp[15]="_2500";
+  temp[16]="_3000";
+  temp[17]="_4000";
+  temp[18]="_5000";
+  temp[19]="_6000";
+  temp[20] = "_8000";
   return temp;
 }
 
@@ -178,7 +178,7 @@ Forwarder::onIncomingInterest(Face& inFace, const Interest& interest)
 
       m_cs.find(interest,
                 bind(&Forwarder::onContentStoreHit, this, ref(inFace), pitEntry, _1, _2),
-                bind(&Forwarder::onContentStoreMiss, this, ref(inFace), pitEntry, _1));
+                bind(&Forwarder::onObjectProcessorHit, this, ref(inFace), pitEntry, _1));
       //OON
     }
     else {
@@ -187,7 +187,7 @@ Forwarder::onIncomingInterest(Face& inFace, const Interest& interest)
         this->onContentStoreHit(inFace, pitEntry, interest, *match);
       }
       else {
-        this->onObjectProcessorMiss(inFace, pitEntry, interest);
+        this->onObjectProcessorHit(inFace, pitEntry, interest);
       }
     }
   }
@@ -221,12 +221,60 @@ Forwarder::onObjectProcessorMiss(const Face& inFace,
 void
 Forwarder::onContentStoreMiss(const Face& inFace,
                               shared_ptr<pit::Entry> pitEntry,
-                              const Interest& interest)
+                              const Interest& interest){
+  //std::cout<<"content store miss after search"<<std::endl;
+  return;
+}
+
+void
+Forwarder::onObjectProcessorHit(const Face& inFace,
+                              shared_ptr<pit::Entry> pitEntry,
+                              const Interest& child_interest)
 {
-    if (m_opFromNdnSim == nullptr) {
-      m_op.find(interest,
-                bind(&Forwarder::onProcessingData, this, ref(inFace), _1, _2),
-                bind(&Forwarder::onObjectProcessorMiss, this, ref(inFace), pitEntry, _1));
+    Name childName(child_interest.getName());
+    childName = childName.getPrefix(-1);
+    std::string childname = childName.toUri();  // get the uri from interest
+    std::string parent_fname;
+    std::string movie = "bunny_2s";
+    size_t pos_1 = childname.find(movie);
+    size_t pos_2 = childname.find("kbit",pos_1+1);
+    bool tag = false;
+    if (pos_1 != std::string::npos && pos_2 != std::string::npos){
+      std::string prefix = childname.substr(0, pos_1+8);
+      std::string suffix = childname.substr(pos_2);;
+      std::string quality = childname.substr(pos_1+8,pos_2-pos_1-9);
+      
+      shared_ptr<Data> match = nullptr;
+      uint index = 1;
+      std::string parentname;
+      while (!tag && match == nullptr && index <20){
+        index ++;
+        if (name_map[childname.substr(pos_1+8,pos_2-pos_1-9)]<20){
+          parentname = rename_map[name_map[childname.substr(pos_1+8,pos_2-pos_1-9)]+index];
+        }
+        parentname = prefix+parentname+suffix;
+        std::cout<<parentname<<std::endl;
+        Name parent_Name(parentname);
+        Interest parent_interest(parent_Name);
+        parent_interest.setNonce(child_interest.getNonce());
+        //time::milliseconds interestLifeTime(m_interestLifeTime.GetMilliSeconds());
+        //parent_interest.setInterestLifetime(interestLifeTime);
+        //parent_interest.setLink(child_interest.getLink());
+        if (m_opFromNdnSim == nullptr) {
+          m_cs.find(parent_interest,
+                    bind(&Forwarder::onProcessingData, this, ref(inFace), _1, tag , _2),
+                    bind(&Forwarder::onContentStoreMiss, this, ref(inFace), pitEntry, _1));
+        } 
+        else {
+          match = m_csFromNdnSim->Lookup(parent_interest.shared_from_this());
+          if (match != nullptr) {
+            this->onProcessingData(inFace, parent_interest, tag, *match);
+          }
+        }
+      }
+    }
+    if (!tag){
+      this->onObjectProcessorMiss(inFace, pitEntry, child_interest);
     }
     return;
 }
@@ -261,13 +309,15 @@ Forwarder::onContentStoreHit(const Face& inFace,
 
 //OON
 void
-Forwarder::onProcessingData(const Face& inFace, const Interest& interest, const Data& data)
-{   //todo
+Forwarder::onProcessingData(const Face& inFace, const Interest& parent_interest, bool& tag, const Data& data)
+{   
+    NFD_LOG_DEBUG("onProcessingData parent interest=" << parent_interest.getName());
+    //todo
     //volatile size_t i = 1;
     //size_t size = data.getContent().value_size();
     //for (i = 1; i < size; i++); //to do data processing
     //onOutgoingData(data,outFace);
-    //std::cout<<data.getContent().value_size()<<"\t'";
+    std::cout<<"processing..."<<"\t'";
      const_pointer_cast<Data>(data.shared_from_this())->setIncomingFaceId(FACEID_OBJECT_PROCESSOR);
     if (inFace.getId() == INVALID_FACEID) {
       NFD_LOG_WARN("onOutgoingData face=invalid data=" << data.getName());
@@ -277,6 +327,7 @@ Forwarder::onProcessingData(const Face& inFace, const Interest& interest, const 
     NFD_LOG_DEBUG("onOutgoingData face=" << inFace.getId() << " data=" << data.getName());
     const_pointer_cast<Face>(inFace.shared_from_this())->sendData(data);
     ++m_counters.getNOutDatas();
+    tag = true;
     return;
   }
 
@@ -287,21 +338,9 @@ Forwarder::onInterestLoop(Face& inFace, const Interest& interest,
 {
   NFD_LOG_DEBUG("onInterestLoop face=" << inFace.getId() <<
                 " interest=" << interest.getName());
-
-  //OON
-  if (m_opFromNdnSim == nullptr){
-      return;
-  }else{
-    shared_ptr<Data> match = this->m_opFromNdnSim->Lookup(interest.shared_from_this());
-    NFD_LOG_DEBUG("onObjectProcessor interest=" << interest.getName());
-    if (match != nullptr){
-      onProcessingData(*const_pointer_cast<Face>(inFace.shared_from_this()),interest,*match);
-    }
     return;
-  }
-
-  // (drop)
 }
+
 
 /** \brief compare two InRecords for picking outgoing Interest
  *  \return true if b is preferred over a

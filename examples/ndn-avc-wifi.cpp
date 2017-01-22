@@ -137,7 +137,7 @@ main(int argc, char* argv[])
   consumerHelper.SetAttribute("StartUpDelay", StringValue("0.5"));
   
   consumerHelper.SetAttribute("AdaptationLogic", StringValue("dash::player::RateBasedAdaptationLogic"));
-  consumerHelper.SetAttribute("MpdFileToRequest", StringValue(std::string("/home/percy/multimediaData/AVC/BBB-2s-v1.mpd" )));
+  consumerHelper.SetAttribute("MpdFileToRequest", StringValue(std::string("/home/percy/multimediaData/AVC/BBB-2s.mpd" )));
 
   ApplicationContainer consumer_0 = consumerHelper.Install(nodes.Get(0));
   consumer_0.Start(Seconds(0.5));

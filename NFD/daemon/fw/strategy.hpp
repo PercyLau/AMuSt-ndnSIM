@@ -175,18 +175,18 @@ inline void
 Strategy::startObjectProcessing(shared_ptr<pit::Entry> pitEntry, shared_ptr<Face> outFace, const Interest& interest){
   //to do revise interest
   //std::cout<<"object processing";
-  if (m_forwarder.m_opFromNdnSim != nullptr){
-    //std::cout<<"object processing";
-    shared_ptr<Data> match = m_forwarder.m_opFromNdnSim->Lookup(interest.shared_from_this());
-   //shared_ptr<Data> match = nullptr;
-    if (match != nullptr){
-    m_forwarder.onProcessingData(*outFace, interest,*match);
-    //std::cout<<"object processing";
-    //m_forwarder.onOutgoingInterest(pitEntry, *outFace, false);
-    }
-  }else{
-    m_forwarder.onOutgoingInterest(pitEntry, *outFace, true);
-  }
+  // if (m_forwarder.m_opFromNdnSim != nullptr){
+  //   //std::cout<<"object processing";
+  //   shared_ptr<Data> match = m_forwarder.m_opFromNdnSim->Lookup(interest.shared_from_this());
+  //  //shared_ptr<Data> match = nullptr;
+  //   if (match != nullptr){
+  //   m_forwarder.onProcessingData(*outFace, interest,*match);
+  //   //std::cout<<"object processing";
+  //   //m_forwarder.onOutgoingInterest(pitEntry, *outFace, false);
+  //   }
+  // }else{
+  //   m_forwarder.onOutgoingInterest(pitEntry, *outFace, true);
+  // }
   m_forwarder.onOutgoingInterest(pitEntry, *outFace, true);
 
 };

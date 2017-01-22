@@ -121,6 +121,11 @@ public: // allow enabling ndnSIM content store (will be removed in the future)
   setOpFromNdnSim(ns3::Ptr<ns3::ndn::ContentStore> cs);
 
 public:
+  //OON
+  static NAME_MAP  name_map;
+  static RENAME_MAP  rename_map;
+  static NAME_MAP init_name_map();
+  static RENAME_MAP init_rename_map();
   /** \brief trigger before PIT entry is satisfied
    *  \sa Strategy::beforeSatisfyInterest
    */
@@ -157,7 +162,7 @@ PUBLIC_WITH_TESTS_ELSE_PRIVATE: // pipelines
 
 //OON
   void
-  onProcessingData(const Face& inFace, const Interest& interest, const Data& data);
+  onProcessingData(const Face& inFace, const Interest& parent_interest, bool& tag, const Data& data);
 //void Forwarder::onProcessingData(Face& outFace, const Interest& interest, const Data& data)
 
 
