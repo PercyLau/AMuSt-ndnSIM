@@ -240,22 +240,22 @@ Forwarder::onObjectProcessorHit(const Face& inFace,
     if (pos_1 != std::string::npos && pos_2 != std::string::npos){
       std::string prefix = childname.substr(0, pos_1+8);
       std::string suffix = childname.substr(pos_2);;
-      std::string quality = childname.substr(pos_1+8,pos_2-pos_1-9);
+      std::string quality = childname.substr(pos_1+8,pos_2-pos_1-8);
       tag = false;
       shared_ptr<Data> match = nullptr;
-      uint index = name_map[childname.substr(pos_1+8,pos_2-pos_1-9)];
+      uint index = name_map[childname.substr(pos_1+8,pos_2-pos_1-8)];
       std::string parentname;
       while (!tag && match == nullptr && index <20){
         index ++;
         parentname = rename_map[index];
         parentname = prefix+parentname+suffix;
         //<<parentname<<std::endl;
-        Name parent_Name(childname);
+        Name parent_Name(parentname);
         Interest parent_interest(parent_Name);
         parent_interest.setNonce(child_interest.getNonce());
         parent_interest.setInterestLifetime(child_interest.getInterestLifetime());
         //NS_LOG_INFO("> Creating INTEREST for " << interest.getName());
-        if (m_opFromNdnSim == nullptr) {
+        if (m_opFromNdnSim == nullptr ) {
           m_cs.find(parent_interest,
                     bind(&Forwarder::onProcessingData, this, ref(inFace), _1, &tag , _2),
                     bind(&Forwarder::onContentStoreMiss, this, ref(inFace), pitEntry, _1));
@@ -308,21 +308,21 @@ Forwarder::onProcessingData(const Face& inFace, const Interest& parent_interest,
 {   
     NFD_LOG_DEBUG("onProcessingData parent interest=" << parent_interest.getName());
     *tag = true;
-    //todo
-    //volatile size_t i = 1;
-    //size_t size = data.getContent().value_size();
-    //for (i = 1; i < size; i++); //to do data processing
-    //onOutgoingData(data,outFace);
-    std::cout<<"processing..."<<std::endl<<parent_interest.getName()<<"\t";
+    // volatile size_t i = 1;
+    // size_t size = data.getContent().value_size();
+    // for (i = 1; i < size; i++); //to do data processing
+    // onOutgoingData(data,outFace);
+    std::cout<<"processing..."<<data.getName()<<std::endl;
+    this->onOutgoingData(data, *const_pointer_cast<Face>(inFace.shared_from_this()));
     const_pointer_cast<Data>(data.shared_from_this())->setIncomingFaceId(FACEID_OBJECT_PROCESSOR);
-    if (inFace.getId() == INVALID_FACEID) {
-      NFD_LOG_WARN("onOutgoingData face=invalid data=" << data.getName());
-      return;
-      //drop
-    }
-    NFD_LOG_DEBUG("onOutgoingData face=" << inFace.getId() << " data=" << data.getName());
-    const_pointer_cast<Face>(inFace.shared_from_this())->sendData(data);
-    ++m_counters.getNOutDatas();
+    // if (inFace.getId() == INVALID_FACEID) {
+    //    NFD_LOG_WARN("onOutgoingData face=invalid data=" << data.getName());
+    //    return;
+    // //   //drop
+    //  }
+    //  NFD_LOG_DEBUG("onOutgoingData face=" << inFace.getId() << " data=" << data.getName());
+    //  const_pointer_cast<Face>(inFace.shared_from_this())->sendData(data);
+    //  ++m_counters.getNOutDatas();
     return;
   }
 

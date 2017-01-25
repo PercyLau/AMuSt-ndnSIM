@@ -125,10 +125,8 @@ FakeFileServer::StartApplication()
 
 
 
-  while (std::getline(infile,line))
-  {
-    if (line.length() > 2)
-    {
+  while (std::getline(infile, line)){
+    if (line.length() > 2){
       Tokenizer tok(line);
       vecLine.assign(tok.begin(), tok.end());
       m_fileSizes["/" + vecLine.at(0)] = atoi(vecLine.at(1).c_str());
@@ -150,7 +148,6 @@ FakeFileServer::GetFaceMTU(uint32_t faceId)
 {
   Ptr<ns3::NetDevice> nd1 = GetNode ()->GetDevice(faceId)->GetObject<ns3::NetDevice>();
   return nd1->GetMtu();
-
 }
 
 

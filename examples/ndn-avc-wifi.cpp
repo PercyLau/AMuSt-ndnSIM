@@ -101,7 +101,7 @@ main(int argc, char* argv[])
   // ndnHelper.AddNetDeviceFaceCreateCallback (WifiNetDevice::GetTypeId (), MakeCallback
   // (MyNetDeviceFaceCallback));
   //ndnHelper.SetOldContentStore("ns3::ndn::cs::Lru", "MaxSize", "1");
-  ndnHelper.setCsSize(10);
+  ndnHelper.setCsSize(1000000);
   ndnHelper.setOpMIPS(1);
   ndnHelper.SetDefaultRoutes(true);
   ndnHelper.Install(nodes.Get(0));
@@ -117,7 +117,7 @@ main(int argc, char* argv[])
   //ndnHelper.Install(nodes.Get(6));
   //ndnHelper.Install(nodes.Get(7));
   
-  ndnHelper.setCsSize(1);
+  ndnHelper.setCsSize(1000000);
   ndnHelper.setOpMIPS(1);
   ndnHelper.Install(nodes.Get(3));
   // Set routing strategy
@@ -149,12 +149,12 @@ main(int argc, char* argv[])
   //consumerHelper.Install(nodes.Get(4));
 
       // Connect Tracers
-  Config::ConnectWithoutContext("/NodeList/*/ApplicationList/*/FileDownloadFinished",
-                               MakeCallback(&FileDownloadedTrace));
-  Config::ConnectWithoutContext("/NodeList/*/ApplicationList/*/ManifestReceived",
-                               MakeCallback(&FileDownloadedManifestTrace));
-  Config::ConnectWithoutContext("/NodeList/*/ApplicationList/*/FileDownloadStarted",
-                               MakeCallback(&FileDownloadStartedTrace));
+  // Config::ConnectWithoutContext("/NodeList/*/ApplicationList/*/FileDownloadFinished",
+  //                              MakeCallback(&FileDownloadedTrace));
+  // Config::ConnectWithoutContext("/NodeList/*/ApplicationList/*/ManifestReceived",
+  //                              MakeCallback(&FileDownloadedManifestTrace));
+  // Config::ConnectWithoutContext("/NodeList/*/ApplicationList/*/FileDownloadStarted",
+  //                              MakeCallback(&FileDownloadStartedTrace));
 
   // 5. Set up server devices
   ndn::AppHelper mpdProducerHelper("ns3::ndn::FileServer");
