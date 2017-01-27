@@ -4,6 +4,14 @@
 		"selected_items":
 		[
 			[
+				"Set",
+				"SetAttribute"
+			],
+			[
+				"mpd",
+				"mpdProducerHelper"
+			],
+			[
 				"par",
 				"parentname"
 			],
@@ -148,10 +156,6 @@
 				"m_maxMIPS"
 			],
 			[
-				"Set",
-				"SetTypeId"
-			],
-			[
 				"in",
 				"interest"
 			],
@@ -203,6 +207,15 @@
 	},
 	"buffers":
 	[
+		{
+			"file": "wscript",
+			"settings":
+			{
+				"buffer_size": 13469,
+				"encoding": "UTF-8",
+				"line_ending": "Unix"
+			}
+		}
 	],
 	"build_system": "Packages/Makefile/Make.sublime-build",
 	"build_system_choices":
@@ -272,15 +285,29 @@
 	},
 	"expanded_folders":
 	[
-		"/home/percy/ndnSIM/ns-3/src/ndnSIM",
-		"/home/percy/ndnSIM/ns-3/src/ndnSIM/NFD",
-		"/home/percy/ndnSIM/ns-3/src/ndnSIM/NFD/daemon",
-		"/home/percy/ndnSIM/ns-3/src/ndnSIM/NFD/daemon/fw",
-		"/home/percy/ndnSIM/ns-3/src/ndnSIM/apps",
-		"/home/percy/ndnSIM/ns-3/src/ndnSIM/examples"
+		"/home/percy/ndnSIM/ns-3/src/ndnSIM"
 	],
 	"file_history":
 	[
+		"/home/percy/ndnSIM/ns-3/src/applications/wscript",
+		"/home/percy/ndnSIM/ns-3/src/wscript",
+		"/home/percy/ndnSIM/ns-3/src/ndnSIM/wscript",
+		"/home/percy/ndnSIM/ns-3/src/applications/model/http-server-fake-clientsocket.cc",
+		"/home/percy/ndnSIM/ns-3/src/applications/model/#ifndef HTTP_SERVER_FAKE_CLIENTSOCKET.h",
+		"/home/percy/ndnSIM/ns-3/src/applications/model/http-server-fake-virtual-clientsocket.cc",
+		"/home/percy/ndnSIM/ns-3/src/applications/model/http-server-fake-virtual-clientsocket.h",
+		"/home/percy/ndnSIM/ns-3/src/applications/model/http-server.h",
+		"/home/percy/ndnSIM/ns-3/src/applications/model/node-throughput-tracer.cc",
+		"/home/percy/ndnSIM/ns-3/src/applications/model/node-throughput-tracer.h",
+		"/home/percy/ndnSIM/ns-3/src/ndnSIM/apps/http-ip-file-simple-test.cpp",
+		"/home/percy/ndnSIM/ns-3/src/internet/wscript",
+		"/home/percy/ndnSIM/ns-3/src/dash/model/ip-file-consumer.cpp",
+		"/home/percy/ndnSIM/ns-3/src/dash/model/IPFileConsumer.hpp",
+		"/home/percy/ndnSIM/ns-3/src/ndnSIM/apps/ip-file-consumer.cpp",
+		"/home/percy/ndnSIM/ns-3/src/dash/model/IP-Multimedia-Consumer.cpp",
+		"/home/percy/ndnSIM/ns-3/src/ndnSIM/examples/ndn-avc-wifi.cpp",
+		"/home/percy/ndnSIM/ns-3/src/ndnSIM/examples/ndn-file-simple-example1.cpp",
+		"/home/percy/ndnSIM/ns-3/src/ndnSIM/apps/ndn-fake-fileserver.cpp",
 		"/home/percy/ndnSIM/ns-3/src/ndnSIM/ndn-cxx/src/interest.cpp",
 		"/home/percy/ndnSIM/ns-3/src/ndnSIM/ndn-cxx/src/interest.hpp",
 		"/home/percy/ndnSIM/ns-3/src/ndnSIM/NFD/daemon/fw/forwarder.cpp",
@@ -289,19 +316,16 @@
 		"/home/percy/ndnSIM/ns-3/src/ndnSIM/ndn-cxx/src/name.cpp",
 		"/home/percy/ndnSIM/ns-3/src/ndnSIM/ndn-cxx/src/name.hpp",
 		"/home/percy/ndnSIM/ns-3/src/ndnSIM/apps/ndn-file-consumer.hpp",
-		"/home/percy/ndnSIM/ns-3/src/ndnSIM/examples/ndn-avc-wifi.cpp",
 		"/home/percy/ndnSIM/ns-3/src/ndnSIM/model/cs/ndn-content-store.hpp",
 		"/home/percy/ndnSIM/ns-3/src/ndnSIM/model/cs/content-store-impl.hpp",
 		"/home/percy/ndnSIM/ns-3/src/ndnSIM/NFD/daemon/table/cs.hpp",
 		"/home/percy/ndnSIM/ns-3/src/ndnSIM/NFD/daemon/table/cs.cpp",
 		"/home/percy/ndnSIM/ns-3/src/ndnSIM/apps/oon-processor.cpp",
 		"/home/percy/ndnSIM/ns-3/src/ndnSIM/examples/ndn-simple-lte",
-		"/home/percy/ndnSIM/ns-3/src/ndnSIM/apps/ndn-fake-fileserver.cpp",
 		"/home/percy/ndnSIM/ns-3/src/ndnSIM/ndn-cxx/src/data.cpp",
 		"/home/percy/ndnSIM/ns-3/src/ndnSIM/examples/ndn-simple-lte.cpp",
 		"/home/percy/ndnSIM/ns-3/src/ndnSIM/apps/ndn-fake-fileserver.hpp",
 		"/home/percy/ndnSIM/ns-3/src/ndnSIM/apps/ndn-fileserver.cpp",
-		"/home/percy/ndnSIM/ns-3/src/ndnSIM/examples/ndn-file-simple-example1.cpp",
 		"/home/percy/ndnSIM/ns-3/src/ndnSIM/examples/ndn-simple-wifi.cpp",
 		"/home/percy/ndnSIM/ns-3/src/ndnSIM/apps/ndn-fileserver.hpp",
 		"/home/percy/ndnSIM/ns-3/src/ndnSIM/apps/ndn-app.hpp",
@@ -392,23 +416,7 @@
 		"/home/lockheed/ndnSIM/ns-3/src/ndnSIM/NFD/daemon/fw/best-route-strategy.cpp",
 		"/home/lockheed/ndnSIM/ns-3/src/ndnSIM/NFD/daemon/fw/client-control-strategy.cpp",
 		"/home/lockheed/ndnSIM/ns-3/build/ns3/ndnSIM/ndn-cxx/management/nfd-control-parameters.hpp",
-		"/home/lockheed/ndnSIM/ns-3/src/ndnSIM/NFD/daemon/mgmt/face-manager.cpp",
-		"/home/lockheed/ndnSIM/ns-3/src/ndnSIM/NFD/daemon/mgmt/tables-config-section.cpp",
-		"/home/lockheed/ndnSIM/ns-3/build/ns3/ndnSIM/NFD/daemon/mgmt/tables-config-section.hpp",
-		"/home/lockheed/ndnSIM/ns-3/src/ndnSIM/NFD/daemon/fw/forwarder.hpp",
-		"/home/lockheed/ndnSIM/ns-3/build/ns3/ndnSIM/NFD/daemon/table/fib.hpp",
-		"/home/lockheed/ndnSIM/ns-3/src/core/model/pointer.cc",
-		"/home/lockheed/ndnSIM/ns-3/src/core/model/type-id.cc",
-		"/home/lockheed/ndnSIM/ns-3/examples/wireless/wifi-simple-adhoc-grid.cc",
-		"/home/lockheed/ndnSIM/ns-3/src/ndnSIM/NFD/daemon/fw/best-route-strategy.hpp",
-		"/home/lockheed/ndnSIM/ns-3/src/ndnSIM/examples/ndn-grid.cpp",
-		"/home/lockheed/ndnSIM/ns-3/build/ns3/ndnSIM/ndn-cxx/management/nfd-fib-entry.hpp",
-		"/home/lockheed/ndnSIM/ns-3/src/ndnSIM/NFD/daemon/table/fib-nexthop.cpp",
-		"/home/lockheed/ndnSIM/ns-3/build/ns3/ndnSIM/NFD/daemon/table/fib-nexthop.hpp",
-		"/home/lockheed/ndnSIM/ns-3/src/ndnSIM/NFD/daemon/table/pit-entry.cpp",
-		"/home/lockheed/ndnSIM/ns-3/build/ns3/ndnSIM/NFD/daemon/table/pit-entry.hpp",
-		"/home/lockheed/ndnSIM/ns-3/src/ndnSIM/NFD/daemon/fw/client-control-strategy.hpp",
-		"/home/lockheed/ndnSIM/ns-3/build/ns3/ndnSIM/NFD/daemon/mgmt/fib-manager.hpp"
+		"/home/lockheed/ndnSIM/ns-3/src/ndnSIM/NFD/daemon/mgmt/face-manager.cpp"
 	],
 	"find":
 	{
@@ -431,6 +439,10 @@
 		"case_sensitive": false,
 		"find_history":
 		[
+			"m_adaptationLogicStr",
+			"MultimediaPlayer",
+			"player",
+			"csv",
 			"MakeNameAccessor",
 			"m_interestName",
 			"setInterestLifetime",
@@ -554,11 +566,7 @@
 			"onContentStore",
 			"onProcessingData",
 			"onObjec",
-			"onProcessingData",
-			"onObjectProcessorHit",
-			"interest",
-			"intere",
-			"onContentStoreHit"
+			"onProcessingData"
 		],
 		"highlight": true,
 		"in_selection": false,
@@ -582,8 +590,39 @@
 	"groups":
 	[
 		{
+			"selected": 0,
 			"sheets":
 			[
+				{
+					"buffer": 0,
+					"file": "wscript",
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 13469,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								7364,
+								7364
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/Python/Python.sublime-syntax",
+							"tab_size": 4,
+							"translate_tabs_to_spaces": true
+						},
+						"translation.x": -0.0,
+						"translation.y": 4650.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 0,
+					"type": "text"
+				}
 			]
 		}
 	],
@@ -712,7 +751,7 @@
 	"show_open_files": true,
 	"show_tabs": true,
 	"side_bar_visible": true,
-	"side_bar_width": 321.0,
+	"side_bar_width": 403.0,
 	"status_bar_visible": true,
 	"template_settings":
 	{

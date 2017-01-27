@@ -10,13 +10,12 @@
 using namespace std;
 namespace ns3 {
 
-
 NS_LOG_COMPONENT_DEFINE("ndn.AVC.WiFiExample");
 
 void
 FileDownloadedTrace(Ptr<ns3::ndn::App> app, shared_ptr<const ndn::Name> interestName, double downloadSpeed, long milliSeconds)
 {
-  std::cout << "Trace: File finished downloading: " << Simulator::Now().GetMilliSeconds () << " "<< *interestName <<
+  std::cout <<"File finished downloading: " << Simulator::Now().GetMilliSeconds () << " "<< *interestName <<
      " Download Speed: " << downloadSpeed/1000.0 << " Kilobit/s in " << milliSeconds << " ms" << std::endl;
 }
 
@@ -68,7 +67,7 @@ main(int argc, char* argv[])
 
   Ptr<UniformRandomVariable> randomizer = CreateObject<UniformRandomVariable>();
   randomizer->SetAttribute("Min", DoubleValue(1)); // 
-  randomizer->SetAttribute("Max", DoubleValue(10));
+  randomizer->SetAttribute("Max", DoubleValue(50));
 
   MobilityHelper mobility;
   mobility.SetPositionAllocator("ns3::RandomBoxPositionAllocator", "X", PointerValue(randomizer),
@@ -149,18 +148,27 @@ main(int argc, char* argv[])
   //consumerHelper.Install(nodes.Get(4));
 
       // Connect Tracers
-  // Config::ConnectWithoutContext("/NodeList/*/ApplicationList/*/FileDownloadFinished",
-  //                              MakeCallback(&FileDownloadedTrace));
-  // Config::ConnectWithoutContext("/NodeList/*/ApplicationList/*/ManifestReceived",
-  //                              MakeCallback(&FileDownloadedManifestTrace));
-  // Config::ConnectWithoutContext("/NodeList/*/ApplicationList/*/FileDownloadStarted",
-  //                              MakeCallback(&FileDownloadStartedTrace));
+  Config::ConnectWithoutContext("/NodeList/*/ApplicationList/*/FileDownloadFinished",
+                               MakeCallback(&FileDownloadedTrace));
+  Config::ConnectWithoutContext("/NodeList/*/ApplicationList/*/ManifestReceived",
+                               MakeCallback(&FileDownloadedManifestTrace));
+  Config::ConnectWithoutContext("/NodeList/*/ApplicationList/*/FileDownloadStarted",
+                               MakeCallback(&FileDownloadStartedTrace));
 
   // 5. Set up server devices
   ndn::AppHelper mpdProducerHelper("ns3::ndn::FileServer");
-  mpdProducerHelper.SetPrefix("/home/percy/multimediaData/AVC/");
-  mpdProducerHelper.SetAttribute("ContentDirectory", StringValue("/home/percy/multimediaData/AVC/"));
+  mpdProducerHelper.SetPrefix("/home/percy/multimediaData/AVC");
+  mpdProducerHelper.SetAttribute("ContentDirectory", StringValue("/home/percy/multimediaData/AVC"));
   mpdProducerHelper.Install(nodes.Get(3));
+
+  // Producer responsible for hosting the virtual segments
+  ndn::AppHelper fakeSegmentProducerHelper("ns3::ndn::FakeFileServer");
+
+  // Producer will reply to all requests starting with /myprefix/AVC/BBB/ and hosts the virtual segment files there
+  //fakeSegmentProducerHelper.SetPrefix("/home/percy/multimediaData/AVC/BBB");
+  //fakeSegmentProducerHelper.SetAttribute("MetaDataFile", StringValue("dash_dataset_avc_bbb.csv"));
+  //fakeSegmentProducerHelper.Install(nodes.Get(3)); // install to some node from nodelist
+
 
   // 6. Set global routing?
   ndn::GlobalRoutingHelper ndnGlobalRoutingHelper;
@@ -178,10 +186,10 @@ main(int argc, char* argv[])
   ////////////////
 
   Simulator::Stop(Seconds(4000));
-  ndn::DASHPlayerTracer::InstallAll("dash-output-ndn.txt");
-  ndn::L3RateTracer::InstallAll("rate-trace-ndn.txt", Seconds(0.5));
-  L2RateTracer::InstallAll("L2-output-oon.txt",Seconds(0.5));
-  ndn::AppDelayTracer::InstallAll("app-delays-trace-ndn.txt");
+  //ndn::DASHPlayerTracer::InstallAll("dash-output-ndn.txt");
+  //ndn::L3RateTracer::InstallAll("rate-trace-ndn.txt", Seconds(0.5));
+  //L2RateTracer::InstallAll("L2-output-oon.txt",Seconds(0.5));
+  //ndn::AppDelayTracer::InstallAll("app-delays-trace-ndn.txt");
   //ndn::FileConsumerLogTracer::InstallAll("file-consumer-log-trace.txt");
 
   Simulator::Run();
