@@ -49,7 +49,7 @@ int
 main(int argc, char* argv[])
 {
   // setting default parameters for PointToPoint links and channels
-  Config::SetDefault("ns3::PointToPointNetDevice::DataRate", StringValue("1Mbps"));
+  Config::SetDefault("ns3::PointToPointNetDevice::DataRate", StringValue("10Mbps"));
   Config::SetDefault("ns3::PointToPointChannel::Delay", StringValue("100ms"));
   Config::SetDefault("ns3::DropTailQueue::MaxPackets", StringValue("20"));
 
@@ -70,7 +70,7 @@ main(int argc, char* argv[])
   ndn::StackHelper ndnHelper;
   ndnHelper.SetDefaultRoutes(true);
   ndnHelper.setCsSize(10);
-  ndnHelper.setOpMIPS(10000);
+  ndnHelper.setOpMIPS(1000);
   ndnHelper.SetOldContentStore("ns3::ndn::cs::Lru", "MaxSize", "100");
   ndnHelper.InstallAll();
 
@@ -116,8 +116,8 @@ main(int argc, char* argv[])
 
   Simulator::Stop(Seconds(1200.0));
 
-  ndn::DASHPlayerTracer::InstallAll("dash-output-ndn.txt");
-  ndn::CsTracer::InstallAll("cs-trace-ndn.txt", Seconds(1));
+  //ndn::DASHPlayerTracer::InstallAll("dash-output-ndn.txt");
+  //ndn::CsTracer::InstallAll("cs-trace-ndn.txt", Seconds(1));
   Simulator::Run();
   Simulator::Destroy();
 

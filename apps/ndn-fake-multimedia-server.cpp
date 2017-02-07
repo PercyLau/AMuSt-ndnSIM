@@ -149,13 +149,8 @@ FakeMultimediaServer::StartApplication()
   if (!line.compare(0, prefix.size(), prefix))
     number_of_segments = atoi(line.substr(prefix.size()).c_str());
 
-  fprintf(stderr,"duration=%d,number=%d\n", segment_duration,number_of_segments);
-
-  // get header and ignore
-  std::getline(infile,line);
-
-
-  std::ostringstream mpdData;
+ // fprintf(stderr,"duration=%d,number=%d\n", segment_duration,number_of_segments);
+  std::stringstream mpdData;
 
   mpdData << "<?xml version=\"1.0\" encoding=\"UTF-8\"?>" << std::endl 
           << "<MPD xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\"" << std::endl
@@ -174,14 +169,14 @@ FakeMultimediaServer::StartApplication()
   
 
 
-  mpdData << "mediaPresentationDuration=\"PT" << videoDurationInHours << "H" << videoDurationInMinutes << "M" << videoDurationInSeconds << "S\" "; 
+  mpdData << "mediaPresentationDuration=\"PT" << videoDurationInHours << "H" << 
+          videoDurationInMinutes << "M" <<
+          videoDurationInSeconds << "S\" "; 
   mpdData << "minBufferTime=\"PT2.0S\">" << std::endl;
   mpdData << "<BaseURL>" << m_prefix << "/</BaseURL>" << std::endl
           << "<Period start=\"PT0S\">" << std::endl << "<AdaptationSet bitstreamSwitching=\"true\">" << std::endl;
 
-
-
-
+  std::getline(infile,line);
   
   while (std::getline(infile,line))
   {
