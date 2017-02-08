@@ -207,15 +207,6 @@
 	},
 	"buffers":
 	[
-		{
-			"file": "wscript",
-			"settings":
-			{
-				"buffer_size": 13469,
-				"encoding": "UTF-8",
-				"line_ending": "Unix"
-			}
-		}
 	],
 	"build_system": "Packages/Makefile/Make.sublime-build",
 	"build_system_choices":
@@ -289,9 +280,9 @@
 	],
 	"file_history":
 	[
+		"/home/percy/ndnSIM/ns-3/src/ndnSIM/wscript",
 		"/home/percy/ndnSIM/ns-3/src/applications/wscript",
 		"/home/percy/ndnSIM/ns-3/src/wscript",
-		"/home/percy/ndnSIM/ns-3/src/ndnSIM/wscript",
 		"/home/percy/ndnSIM/ns-3/src/applications/model/http-server-fake-clientsocket.cc",
 		"/home/percy/ndnSIM/ns-3/src/applications/model/#ifndef HTTP_SERVER_FAKE_CLIENTSOCKET.h",
 		"/home/percy/ndnSIM/ns-3/src/applications/model/http-server-fake-virtual-clientsocket.cc",
@@ -590,39 +581,8 @@
 	"groups":
 	[
 		{
-			"selected": 0,
 			"sheets":
 			[
-				{
-					"buffer": 0,
-					"file": "wscript",
-					"semi_transient": false,
-					"settings":
-					{
-						"buffer_size": 13469,
-						"regions":
-						{
-						},
-						"selection":
-						[
-							[
-								7364,
-								7364
-							]
-						],
-						"settings":
-						{
-							"syntax": "Packages/Python/Python.sublime-syntax",
-							"tab_size": 4,
-							"translate_tabs_to_spaces": true
-						},
-						"translation.x": -0.0,
-						"translation.y": 4650.0,
-						"zoom_level": 1.0
-					},
-					"stack_index": 0,
-					"type": "text"
-				}
 			]
 		}
 	],

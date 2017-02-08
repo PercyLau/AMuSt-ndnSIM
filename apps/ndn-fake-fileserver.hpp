@@ -83,11 +83,12 @@ protected:
 private:
   std::string m_prefix;
   std::string m_metaDataFile;
+  std::string m_contentDir;
   std::string m_postfixManifest;
-
+  std::string m_metaDataContentDirectory;
   std::map<std::string,long> m_fileSizes;
   std::map<std::string,size_t> m_packetSizes;
-
+  std::vector<std::string> m_virtualFiles;
 
   uint32_t m_maxPayloadSize;
   Time m_freshness;

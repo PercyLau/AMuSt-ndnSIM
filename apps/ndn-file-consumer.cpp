@@ -705,7 +705,8 @@ double
 FileConsumer::CalculateDownloadSpeed()
 {
   _finished_time = Simulator::Now().GetMilliSeconds ();
-  lastDownloadBitrate = ((double)(m_fileSize *8)) / ( ((double)(_finished_time - _start_time))/1000.0 );
+  double milliSeconds = _finished_time - _start_time;
+  lastDownloadBitrate = ((double)(m_fileSize *8000)) / milliSeconds;
   return lastDownloadBitrate;
 }
 

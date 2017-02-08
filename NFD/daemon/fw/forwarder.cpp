@@ -236,38 +236,38 @@ Forwarder::onObjectProcessorHit(const Face& inFace,
     std::string movie = "bunny_2s";
     size_t pos_1 = childname.find(movie);
     bool tag = false;
-    size_t pos_2 = childname.find("kbit",pos_1+1);
-    if (pos_1 != std::string::npos && pos_2 != std::string::npos){
-      std::string prefix = childname.substr(0, pos_1+8);
-      std::string suffix = childname.substr(pos_2);;
-      std::string quality = childname.substr(pos_1+8,pos_2-pos_1-8);
-      tag = false;
-      shared_ptr<Data> match = nullptr;
-      uint index = name_map[childname.substr(pos_1+8,pos_2-pos_1-8)];
-      std::string parentname;
-      while (!tag && match == nullptr && index <20){
-        index ++;
-        parentname = rename_map[index];
-        parentname = prefix+parentname+suffix;
-        //<<parentname<<std::endl;
-        Name parent_Name(parentname);
-        Interest parent_interest(parent_Name);
-        parent_interest.setNonce(child_interest.getNonce());
-        parent_interest.setInterestLifetime(child_interest.getInterestLifetime());
-        //NS_LOG_INFO("> Creating INTEREST for " << interest.getName());
-        if (m_opFromNdnSim == nullptr ) {
-          m_cs.find(parent_interest,
-                    bind(&Forwarder::onProcessingData, this, ref(inFace), _1, &tag , _2),
-                    bind(&Forwarder::onContentStoreMiss, this, ref(inFace), pitEntry, _1));
-        } 
-        else {
-          match = m_csFromNdnSim->Lookup(parent_interest.shared_from_this());
-          if (match != nullptr) {
-            this->onProcessingData(inFace, parent_interest, &tag, *match);
-          }
-        }
-      }
-    }
+    // size_t pos_2 = childname.find("kbit",pos_1+1);
+    // if (pos_1 != std::string::npos && pos_2 != std::string::npos){
+    //   std::string prefix = childname.substr(0, pos_1+8);
+    //   std::string suffix = childname.substr(pos_2);;
+    //   std::string quality = childname.substr(pos_1+8,pos_2-pos_1-8);
+    //   tag = false;
+    //   shared_ptr<Data> match = nullptr;
+    //   uint index = name_map[childname.substr(pos_1+8,pos_2-pos_1-8)];
+    //   std::string parentname;
+    //   while (!tag && match == nullptr && index <20){
+    //     index ++;
+    //     parentname = rename_map[index];
+    //     parentname = prefix+parentname+suffix;
+    //     //<<parentname<<std::endl;
+    //     Name parent_Name(parentname);
+    //     Interest parent_interest(parent_Name);
+    //     parent_interest.setNonce(child_interest.getNonce());
+    //     parent_interest.setInterestLifetime(child_interest.getInterestLifetime());
+    //     //NS_LOG_INFO("> Creating INTEREST for " << interest.getName());
+    //     if (m_opFromNdnSim == nullptr ) {
+    //       m_cs.find(parent_interest,
+    //                 bind(&Forwarder::onProcessingData, this, ref(inFace), _1, &tag , _2),
+    //                 bind(&Forwarder::onContentStoreMiss, this, ref(inFace), pitEntry, _1));
+    //     } 
+    //     else {
+    //       match = m_csFromNdnSim->Lookup(parent_interest.shared_from_this());
+    //       if (match != nullptr) {
+    //         this->onProcessingData(inFace, parent_interest, &tag, *match);
+    //       }
+    //     }
+    //   }
+    // }
     if (!tag){
       this->onObjectProcessorMiss(inFace, pitEntry, child_interest);
     }
