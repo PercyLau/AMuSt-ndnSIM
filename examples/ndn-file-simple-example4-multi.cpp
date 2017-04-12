@@ -75,7 +75,7 @@ main(int argc, char* argv[])
   ndnHelper.InstallAll();
 
   // Choosing forwarding strategy
-  ndn::StrategyChoiceHelper::InstallAll("/myprefix", "/localhost/nfd/strategy/best-route");
+  ndn::StrategyChoiceHelper::InstallAll("/", "/localhost/nfd/strategy/best-route");
 
   // Consumer
   ndn::AppHelper consumerHelper("ns3::ndn::FileConsumerCbr");
@@ -97,14 +97,14 @@ main(int argc, char* argv[])
   ndn::AppHelper producerHelper("ns3::ndn::FileServer");
 
   // Producer will reply to all requests starting with /prefix
-  producerHelper.SetPrefix("/myprefix");
+  producerHelper.SetPrefix("/");
   producerHelper.SetAttribute("ContentDirectory", StringValue("/home/percy/somedata/"));
   producerHelper.Install(nodes.Get(3)); // install to some node from nodelist
 
   ndn::GlobalRoutingHelper ndnGlobalRoutingHelper;
   ndnGlobalRoutingHelper.InstallAll();
 
-  ndnGlobalRoutingHelper.AddOrigins("/myprefix", nodes.Get(3));
+  ndnGlobalRoutingHelper.AddOrigins("/", nodes.Get(3));
   ndn::GlobalRoutingHelper::CalculateRoutes();
 
   ndn::AppDelayTracer::InstallAll("app-delays-trace.txt");

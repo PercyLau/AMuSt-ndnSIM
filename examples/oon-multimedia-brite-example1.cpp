@@ -124,14 +124,14 @@ main(int argc, char* argv[])
   ndnHelper.Install (server);
 
   //
-  ndnHelper.setCsSize(100);
-  ndnHelper.setOpMIPS(10000);
+  ndnHelper.setCsSize(10000);
+  ndnHelper.setOpMIPS(100);
   ndnHelper.Install(router);
 
   //ndnHelper.SetDefaultRoutes(true);
 
   // Choosing forwarding strategy
-  ndn::StrategyChoiceHelper::InstallAll("/myprefix", "/localhost/nfd/strategy/oon");
+  ndn::StrategyChoiceHelper::InstallAll("/myprefix", "/localhost/nfd/strategy/multicast/");
   // ndn::StrategyChoiceHelper::InstallAll("/prefix", "/localhost/nfd/strategy/broadcast");
 
 
@@ -157,7 +157,7 @@ main(int argc, char* argv[])
   for(uint32_t i=0; i<client.size (); i++)
   {
     // TODO: Make some logic to decide which file to request
-    consumerHelper.SetAttribute("MpdFileToRequest", StringValue(std::string("/home/lockheed/AVC/BBB/BBB-2s.mpd" )));
+    consumerHelper.SetAttribute("MpdFileToRequest", StringValue(std::string("/home/percy/multimedia/AVC/BBB-2s.mpd" )));
     ApplicationContainer consumer = consumerHelper.Install (client[i]);
 
     std::cout << "Client " << i << " is Node " << client[i]->GetId() << std::endl;
@@ -176,11 +176,11 @@ main(int argc, char* argv[])
   ndn::AppHelper producerHelper("ns3::ndn::FileServer");
 
   // Producer will reply to all requests starting with /myprefix
-  producerHelper.SetPrefix("/home/lockheed/multimediaData/AVC/");
-  producerHelper.SetAttribute("ContentDirectory", StringValue("/home/lockheed/multimediaData/"));
+  producerHelper.SetPrefix("/home/percy/multimediaData/AVC/");
+  producerHelper.SetAttribute("ContentDirectory", StringValue("/home/percy/multimediaData/"));
   producerHelper.Install(server); // install to servers
 
-  ndnGlobalRoutingHelper.AddOrigins("/home/lockheed/multimediaData/AVC/", server);
+  ndnGlobalRoutingHelper.AddOrigins("/home/percy/multimediaData/AVC/", server);
 
   // Calculate and install FIBs
   ndn::GlobalRoutingHelper::CalculateAllPossibleRoutes();

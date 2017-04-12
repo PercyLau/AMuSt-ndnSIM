@@ -336,7 +336,8 @@ long FileServer::GetFileSize(std::string filename)
     return stat_buf.st_size;
   }
   // else: file not found
-  NS_LOG_UNCOND("ERROR: File not found: " << filename);
+  NS_LOG_UNCOND("NDN ERROR: File not found: " << filename);
+
   return -1;
 }
 

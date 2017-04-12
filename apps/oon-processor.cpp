@@ -219,7 +219,8 @@ Processor::OnInterest(shared_ptr<const Interest> interest)
   std::string movie = "bunny_2s";
   int pos_1 = fname.find(movie);
   int pos_2 = fname.find(movie,pos_1+1);
-  if (pos_1 != std::string::npos){
+  if (pos_1 != std::string::npos)
+{
   std::string prefix = fname.substr(0, pos_1+8);
   std::string suffix;
   std::string down_level;
@@ -237,6 +238,8 @@ Processor::OnInterest(shared_ptr<const Interest> interest)
 }else
 {
   new_fname = fname;
+  std::cout<<"file does not exits"<<std::endl;
+  //GetFileSize(new_fname);
 }
   //Name new_name(new_fname);
 
@@ -263,7 +266,6 @@ Processor::OnInterest(shared_ptr<const Interest> interest)
   if (isManifest)
   {
     NS_LOG_INFO("node(" << GetNode()->GetId() << ") responding with Manifest for file " << fname);
-    std::cout<<"BBBB"<<std::endl;
     ReturnManifestData(interest, fname);
   } else
   {
@@ -290,7 +292,7 @@ Processor::OnInterest(shared_ptr<const Interest> interest)
     if(seqNo < floor(new_fileSize/m_maxPayloadSize)){
      //ReturnPayloadData(interest, new_fname, seqNo);
     }
-    std::cout<<new_fname<<std::endl;
+    //std::cout<<new_fname<<std::endl;
     ReturnPayloadData(interest, fname, seqNo);
   }
 }
@@ -301,7 +303,7 @@ void
 Processor::ReturnManifestData(shared_ptr<const Interest> interest, std::string& fname)
 {
   long fileSize = GetFileSize(fname);
-
+  //std::cout<<"Return ManifestData";
   auto data = make_shared<Data>();
   data->setName(interest->getName());
   data->setFreshnessPeriod(::ndn::time::milliseconds(m_freshness.GetMilliSeconds()));
@@ -441,7 +443,7 @@ long Processor::GetFileSize(std::string filename)
     return stat_buf.st_size;
   }
   // else: file not found
-  NS_LOG_UNCOND("ERROR: File not found: " << filename);
+  NS_LOG_UNCOND("OON ERROR: Cached File not found: " << filename);
   return -1;
 }
 

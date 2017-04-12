@@ -66,7 +66,7 @@ main(int argc, char* argv[])
   consumerHelper.SetAttribute("MaxBufferedSeconds", UintegerValue(30));
   consumerHelper.SetAttribute("StartUpDelay", StringValue("0.1"));
   consumerHelper.SetAttribute("AdaptationLogic", StringValue("dash::player::RateAndBufferBasedAdaptationLogic"));
-  consumerHelper.SetAttribute("MpdFileToRequest", StringValue(std::string("/home/lockheed/multimediaData/AVC/BBB-2s.mpd" )));
+  consumerHelper.SetAttribute("MpdFileToRequest", StringValue(std::string("/home/percy/multimediaData/AVC/BBB-2s.mpd" )));
 
   //consumerHelper.SetPrefix (std::string("/Server_" + boost::lexical_cast<std::string>(i%server.size ()) + "/layer0"));
   ApplicationContainer app1 = consumerHelper.Install (nodes.Get(2));
@@ -75,8 +75,8 @@ main(int argc, char* argv[])
   ndn::AppHelper mpdProducerHelper("ns3::ndn::FileServer");
 
   // Producer will reply to all requests starting with /myprefix and hosts the mpd file as well as the segments there
-  mpdProducerHelper.SetPrefix("/home/lockheed/multimediaData/AVC/");
-  mpdProducerHelper.SetAttribute("ContentDirectory", StringValue("/home/lockheed/multimediaData/AVC/"));
+  mpdProducerHelper.SetPrefix("/home/percy/multimediaData/AVC/");
+  mpdProducerHelper.SetAttribute("ContentDirectory", StringValue("/home/percy/multimediaData/AVC/"));
   mpdProducerHelper.Install(nodes.Get(0)); // install to some node from nodelist
 
 

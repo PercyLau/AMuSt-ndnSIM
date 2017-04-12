@@ -28,7 +28,8 @@
 #include "core/random.hpp"
 #include "strategy.hpp"
 #include "face/null-face.hpp"
-
+#include "ns3/ndnSIM/model/ndn-common.hpp"
+#include "ns3/ndnSIM/ndn-cxx/signature.hpp"
 #include "utils/ndn-ns3-packet-tag.hpp"
 #include <iostream>
 
@@ -218,10 +219,24 @@ Forwarder::onObjectProcessorMiss(const Face& inFace,
 
 void
 Forwarder::onContentStoreMiss(const Face& inFace,
-                              shared_ptr<pit::Entry> pitEntry,
-                              const Interest& interest){
-  //std::cout<<"content store miss after search"<<std::endl;
-  return;
+                              shared_ptr<pit::Entry> pitEntry, const Interest& child_interest,
+                              const Interest& parent_interest){
+
+  // NFD_LOG_DEBUG("onContentStoreMiss interest=" << parent_interest.getName());
+
+  // shared_ptr<Face> face = const_pointer_cast<Face>(inFace.shared_from_this());
+  // // insert InRecord
+  // pitEntry->insertOrUpdateInRecord(face, parent_interest);
+
+  // // set PIT unsatisfy timer
+  // this->setUnsatisfyTimer(pitEntry);
+
+  // // FIB lookup
+  // shared_ptr<fib::Entry> fibEntry = m_fib.findLongestPrefixMatch(*pitEntry);
+
+  // // dispatch to strategy
+  // this->dispatchToStrategy(pitEntry, bind(&Strategy::afterReceiveInterest, _1,
+  //                                         cref(inFace), cref(parent_interest), fibEntry, pitEntry));
 }
 
 void
@@ -236,38 +251,44 @@ Forwarder::onObjectProcessorHit(const Face& inFace,
     std::string movie = "bunny_2s";
     size_t pos_1 = childname.find(movie);
     bool tag = false;
-    // size_t pos_2 = childname.find("kbit",pos_1+1);
-    // if (pos_1 != std::string::npos && pos_2 != std::string::npos){
-    //   std::string prefix = childname.substr(0, pos_1+8);
-    //   std::string suffix = childname.substr(pos_2);;
-    //   std::string quality = childname.substr(pos_1+8,pos_2-pos_1-8);
-    //   tag = false;
-    //   shared_ptr<Data> match = nullptr;
-    //   uint index = name_map[childname.substr(pos_1+8,pos_2-pos_1-8)];
-    //   std::string parentname;
-    //   while (!tag && match == nullptr && index <20){
-    //     index ++;
-    //     parentname = rename_map[index];
-    //     parentname = prefix+parentname+suffix;
-    //     //<<parentname<<std::endl;
-    //     Name parent_Name(parentname);
-    //     Interest parent_interest(parent_Name);
-    //     parent_interest.setNonce(child_interest.getNonce());
-    //     parent_interest.setInterestLifetime(child_interest.getInterestLifetime());
-    //     //NS_LOG_INFO("> Creating INTEREST for " << interest.getName());
-    //     if (m_opFromNdnSim == nullptr ) {
-    //       m_cs.find(parent_interest,
-    //                 bind(&Forwarder::onProcessingData, this, ref(inFace), _1, &tag , _2),
-    //                 bind(&Forwarder::onContentStoreMiss, this, ref(inFace), pitEntry, _1));
-    //     } 
-    //     else {
-    //       match = m_csFromNdnSim->Lookup(parent_interest.shared_from_this());
-    //       if (match != nullptr) {
-    //         this->onProcessingData(inFace, parent_interest, &tag, *match);
-    //       }
-    //     }
-    //   }
-    // }
+    size_t pos_2 = childname.find("kbit",pos_1+1);
+    if (pos_1 != std::string::npos && pos_2 != std::string::npos){
+      std::string prefix = childname.substr(0, pos_1+8);
+      std::string suffix = childname.substr(pos_2);;
+      std::string quality = childname.substr(pos_1+8,pos_2-pos_1-8);
+      tag = false;
+      shared_ptr<Data> match = nullptr;
+      uint index = name_map[childname.substr(pos_1+8,pos_2-pos_1-8)];
+      std::string parentname;
+      while (!tag && match == nullptr && index <20){
+        index ++;
+         parentname = rename_map[index];
+         parentname = prefix+parentname+suffix;
+        //std::cout<<parentname<<std::endl;
+        //shared_ptr<Name> nameWithSequence = make_shared<Name>(child_interest.getName());
+        //nameWithSequence->appendSequenceNumber(seq);
+        shared_ptr<Interest> parent_interest = make_shared<Interest>();
+        parent_interest->setNonce(child_interest.getNonce());
+        parent_interest->setName(parentname);
+        parent_interest->setInterestLifetime(child_interest.getInterestLifetime());
+        //NS_LOG_INFO("Creating INTEREST for " << parent_interest.getName());
+        shared_ptr<pit::Entry> new_pitEntry = m_pit.insert(*parent_interest).first; //waiting for the parent data in the near future
+        if (m_opFromNdnSim == nullptr ) {
+          m_op.find(*parent_interest,
+                    bind(&Forwarder::onProcessingData, this, ref(inFace), _1, &tag , child_interest,_2),
+                    bind(&Forwarder::onContentStoreMiss, this, ref(inFace), new_pitEntry, child_interest, _1));
+        } 
+        else {
+          match = m_opFromNdnSim->Lookup(parent_interest);
+          if (match != nullptr) {
+            this->onProcessingData(inFace, *parent_interest, &tag, child_interest,*match);
+          }
+          else{
+            this->onContentStoreMiss(inFace,new_pitEntry,child_interest,*parent_interest);
+          }
+        }
+      }
+    }
     if (!tag){
       this->onObjectProcessorMiss(inFace, pitEntry, child_interest);
     }
@@ -288,14 +309,7 @@ Forwarder::onContentStoreHit(const Face& inFace,
                                           pitEntry, cref(*m_csFace), cref(data)));
 
   const_pointer_cast<Data>(data.shared_from_this())->setIncomingFaceId(FACEID_CONTENT_STORE);
-  // XXX should we lookup PIT for other Interests that also match csMatch?
 
-  //OON 20161209
-  //std::cout<<data.getContent().value()<<'\t';
-  //Name t_name = interest.getName();
-  //Data temp_data(data.getContent());
-  //temp_data.setSignature(data.getSignature());
-  // set PIT straggler timer
   this->setStragglerTimer(pitEntry, true, data.getFreshnessPeriod());
 
   // goto outgoing Data pipeline
@@ -304,17 +318,41 @@ Forwarder::onContentStoreHit(const Face& inFace,
 
 //OON
 void
-Forwarder::onProcessingData(const Face& inFace, const Interest& parent_interest, bool* tag, const Data& data)
+Forwarder:: onProcessingData(const Face& inFace, const Interest& parent_interest, bool* tag, const Interest& child_interest, const Data& parent_data)
 {   
     NFD_LOG_DEBUG("onProcessingData parent interest=" << parent_interest.getName());
     *tag = true;
+    // Get seq_nr from Interest Name
+    //Name childName = child_interest.getName();
+    //std::cout<<"processing..."<<parent_interest.getName()<<std::endl;
+    std::cout<<"data name is"<<parent_data.getName()<<std::endl;
+    std::cout<<"parent data size is "<<parent_data.getContent().size()<<std::endl;
+   // uint32_t seqNo = childName.at(-1).toSequenceNumber();
+
+    auto child_data = make_shared<Data>();
+    child_data->setName(child_interest.getName());
+    auto buffer = make_shared< ::ndn::Buffer>(parent_data.getContent().size()-4);
+    child_data->setContent(buffer);
+
+    ndn::Signature signature;
+    ndn::SignatureInfo signatureInfo(static_cast< ::ndn::tlv::SignatureTypeValue>(255));
+
+    signature.setInfo(signatureInfo);
+    signature.setValue(::ndn::nonNegativeIntegerBlock(::ndn::tlv::SignatureValue, 0)); //default value is 0, others are application specific
+
+    child_data->setSignature(signature);
+
+
+    // to create real wire encoding
+    Block tmp = child_data->wireEncode();
+    std::cout<<"child size: "<<child_data->getContent().size()<<"     "<<"parent size: "<<parent_data.getContent().size()<<std::endl;
     // volatile size_t i = 1;
     // size_t size = data.getContent().value_size();
     // for (i = 1; i < size; i++); //to do data processing
     // onOutgoingData(data,outFace);
-    std::cout<<"processing..."<<data.getName()<<std::endl;
-    this->onOutgoingData(data, *const_pointer_cast<Face>(inFace.shared_from_this()));
-    const_pointer_cast<Data>(data.shared_from_this())->setIncomingFaceId(FACEID_OBJECT_PROCESSOR);
+    //std::cout<<"processing..."<<data.getName()<<std::endl;
+    this->onOutgoingData(*child_data, *const_pointer_cast<Face>(inFace.shared_from_this()));
+    const_pointer_cast<Data>(child_data->shared_from_this())->setIncomingFaceId(FACEID_OBJECT_PROCESSOR);
     // if (inFace.getId() == INVALID_FACEID) {
     //    NFD_LOG_WARN("onOutgoingData face=invalid data=" << data.getName());
     //    return;
@@ -323,6 +361,15 @@ Forwarder::onProcessingData(const Face& inFace, const Interest& parent_interest,
     //  NFD_LOG_DEBUG("onOutgoingData face=" << inFace.getId() << " data=" << data.getName());
     //  const_pointer_cast<Face>(inFace.shared_from_this())->sendData(data);
     //  ++m_counters.getNOutDatas();
+    shared_ptr<Data> dataCopyWithoutPacket = make_shared<Data>(*child_data);
+    dataCopyWithoutPacket->removeTag<ns3::ndn::Ns3PacketTag>();
+    if (m_csFromNdnSim == nullptr){
+        m_cs.insert(*dataCopyWithoutPacket);
+      }
+      else{
+        m_csFromNdnSim->Add(dataCopyWithoutPacket);
+      }
+
     return;
   }
 
