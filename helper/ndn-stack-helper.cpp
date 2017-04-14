@@ -42,7 +42,7 @@ namespace ndn {
 StackHelper::StackHelper()
   : m_needSetDefaultRoutes(false)
   , m_maxCsSize(10)
-  ,m_maxMIPS(100000000)
+  ,m_maxMIPS(0)
   , m_isRibManagerDisabled(false)
   , m_isFaceManagerDisabled(false)
   , m_isStatusServerDisabled(false)
@@ -127,9 +127,14 @@ StackHelper::setCsSize(size_t maxSize)
   m_maxCsSize = maxSize;
 }
 
-void StackHelper::setOpMIPS(size_t maxMIPS)
+void StackHelper::setOpMIPS(bool turnOn)
 {
-  m_maxMIPS = maxMIPS;
+  if (turnOn){
+    m_maxMIPS = 100000000;
+  }
+  else{
+    m_maxMIPS = 0;
+  }
 }
 
 Ptr<FaceContainer>

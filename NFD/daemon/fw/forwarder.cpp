@@ -325,8 +325,8 @@ Forwarder:: onProcessingData(const Face& inFace, const Interest& parent_interest
     // Get seq_nr from Interest Name
     //Name childName = child_interest.getName();
     //std::cout<<"processing..."<<parent_interest.getName()<<std::endl;
-    std::cout<<"data name is"<<parent_data.getName()<<std::endl;
-    std::cout<<"parent data size is "<<parent_data.getContent().size()<<std::endl;
+    //std::cout<<"data name is"<<parent_data.getName()<<std::endl;
+    //std::cout<<"parent data size is "<<parent_data.getContent().size()<<std::endl;
    // uint32_t seqNo = childName.at(-1).toSequenceNumber();
 
     auto child_data = make_shared<Data>();
@@ -345,7 +345,7 @@ Forwarder:: onProcessingData(const Face& inFace, const Interest& parent_interest
 
     // to create real wire encoding
     Block tmp = child_data->wireEncode();
-    std::cout<<"child size: "<<child_data->getContent().size()<<"     "<<"parent size: "<<parent_data.getContent().size()<<std::endl;
+    //std::cout<<"child size: "<<child_data->getContent().size()<<"     "<<"parent size: "<<parent_data.getContent().size()<<std::endl;
     // volatile size_t i = 1;
     // size_t size = data.getContent().value_size();
     // for (i = 1; i < size; i++); //to do data processing

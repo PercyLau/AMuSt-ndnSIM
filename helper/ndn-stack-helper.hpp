@@ -76,7 +76,7 @@ public:
   setCsSize(size_t maxSize);
 
   void
-  setOpMIPS(size_t maxMIPS);
+  setOpMIPS(bool turnOn);
 
   /**
    * @brief Set ndnSIM 1.0 content store implementation and its attributes

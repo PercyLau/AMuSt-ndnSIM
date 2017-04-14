@@ -26,6 +26,7 @@
 #include "ns3/callback.h"
 
 #include "apps/ndn-app.hpp"
+//#include "ns3/http-multimedia-consumer.h" NOT suitable for TCP/IP DASH
 #include "ns3/simulator.h"
 #include "ns3/node-list.h"
 #include "ns3/log.h"
@@ -38,7 +39,7 @@
 NS_LOG_COMPONENT_DEFINE("ndn.DASHPlayerTracer");
 
 namespace ns3 {
-namespace ndn {
+namespace ndn{
 
 static std::list<std::tuple<shared_ptr<std::ostream>, std::list<Ptr<DASHPlayerTracer>>>>
   g_tracers;
@@ -225,6 +226,7 @@ DASHPlayerTracer::PrintHeader(std::ostream& os) const
      << "\t"
      << "SegmentDepIds";
 }
+
 
 void
 DASHPlayerTracer::ConsumeStats(Ptr<ns3::ndn::App> app,

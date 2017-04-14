@@ -28,7 +28,7 @@
 #include <ns3/nstime.h>
 #include <ns3/event-id.h>
 #include <ns3/node-container.h>
-
+//#include "ns3/application.h" not suitable for TCP/IP DASH
 #include <tuple>
 #include <list>
 
@@ -145,8 +145,9 @@ private:
   void
   Connect();
 
+
   void
-  ConsumeStats(Ptr<ns3::ndn::App> app,
+  ConsumeStats(    Ptr<ns3::ndn::App> app,
                                unsigned int segmentNr, std::string representationId, 
                                unsigned int segmentExperiencedBitrate,
                                unsigned int stallingTime, unsigned int bufferLevel, std::vector<std::string> dependencyIds);
