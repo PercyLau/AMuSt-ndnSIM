@@ -93,12 +93,9 @@ main(int argc, char* argv[])
   ApplicationContainer app1 = consumerHelper.Install (nodes.Get(2));
 
     // Connect Tracers
-  Config::ConnectWithoutContext("/NodeList/*/ApplicationList/*/FileDownloadFinished",
-                               MakeCallback(&FileDownloadedTrace));
-  Config::ConnectWithoutContext("/NodeList/*/ApplicationList/*/ManifestReceived",
-                               MakeCallback(&FileDownloadedManifestTrace));
-  Config::ConnectWithoutContext("/NodeList/*/ApplicationList/*/FileDownloadStarted",
-                               MakeCallback(&FileDownloadStartedTrace));
+  Config::ConnectWithoutContext("/NodeList/*/ApplicationList/*/FileDownloadFinished", MakeCallback(&FileDownloadedTrace));
+  Config::ConnectWithoutContext("/NodeList/*/ApplicationList/*/ManifestReceived", MakeCallback(&FileDownloadedManifestTrace));
+  Config::ConnectWithoutContext("/NodeList/*/ApplicationList/*/FileDownloadStarted", MakeCallback(&FileDownloadStartedTrace));
 
   // Producer
   ndn::AppHelper producerHelper("ns3::ndn::FileServer");

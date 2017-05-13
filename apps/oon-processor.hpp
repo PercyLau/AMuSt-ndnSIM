@@ -36,13 +36,7 @@ namespace ns3 {
 namespace ndn {
 
 /**
- * @ingroup ndn-apps
- * @brief A simple Interest-sink applia simple Interest-sink application
- *
- * A simple Interest-sink applia simple Interest-sink application,
- * which replying every incoming Interest with Data packet with a specified
- * size and name same as in Interest.cation, which replying every incoming Interest
- * with Data packet with a specified size and name same as in Interest.
+This general OON processor is under construction 05012017
  */
 
 //OON

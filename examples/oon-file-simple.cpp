@@ -73,6 +73,7 @@ main(int argc, char* argv[])
 
   // Install NDN stack on all nodes
   ndn::StackHelper ndnHelper;
+  ndnHelper.setOpMIPS(false); // turn on object processor
   ndnHelper.SetDefaultRoutes(true);
   ndnHelper.InstallAll();
 
@@ -85,15 +86,12 @@ main(int argc, char* argv[])
 
   consumerHelper.Install(nodes.Get(0)); // install to some node from nodelist
 
-  Config::ConnectWithoutContext("/NodeList/*/ApplicationList/*/FileDownloadFinished",
-                               MakeCallback(&FileDownloadedTrace));
-  Config::ConnectWithoutContext("/NodeList/*/ApplicationList/*/ManifestReceived",
-                               MakeCallback(&FileDownloadedManifestTrace));
-  Config::ConnectWithoutContext("/NodeList/*/ApplicationList/*/FileDownloadStarted",
-                               MakeCallback(&FileDownloadStartedTrace));
+  Config::ConnectWithoutContext("/NodeList/*/ApplicationList/*/FileDownloadFinished", MakeCallback(&FileDownloadedTrace));
+  Config::ConnectWithoutContext("/NodeList/*/ApplicationList/*/ManifestReceived", MakeCallback(&FileDownloadedManifestTrace));
+  Config::ConnectWithoutContext("/NodeList/*/ApplicationList/*/FileDownloadStarted", MakeCallback(&FileDownloadStartedTrace));
 
   // Producer
-  ndn::AppHelper producerHelper("ns3::ndn::Processor");
+  ndn::AppHelper producerHelper("ns3::ndn::FileServer");
 
   // Producer will reply to all requests starting with /prefix
   producerHelper.SetPrefix("/home/percy/multimediaData/AVC/BBB/bunny_2s_200kbit");
@@ -106,7 +104,7 @@ main(int argc, char* argv[])
   ndnGlobalRoutingHelper.AddOrigins("/home/percy/multimediaData/AVC/BBB/", nodes.Get(2));
   ndn::GlobalRoutingHelper::CalculateRoutes();
 
-  Simulator::Stop(Seconds(600.0));
+  //Simulator::Stop(Seconds(6600.0));
 
   Simulator::Run();
   Simulator::Destroy();
